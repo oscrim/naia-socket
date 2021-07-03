@@ -9,7 +9,7 @@ use naia_socket_shared::Ref;
 
 use wasm_bindgen::{prelude::*, JsCast, JsValue};
 use web_sys::{
-    ErrorEvent, MessageEvent, ProgressEvent, RtcConfiguration, RtcDataChannel, RtcDataChannelInit,
+    ErrorEvent, MessageEvent, ProgressEvent, RtcDataChannel, RtcDataChannelInit,
     RtcDataChannelType, RtcIceCandidate, RtcIceCandidateInit, RtcPeerConnection, RtcSdpType,
     RtcSessionDescriptionInit, XmlHttpRequest,
 };
