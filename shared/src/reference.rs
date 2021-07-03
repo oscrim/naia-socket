@@ -57,7 +57,7 @@ cfg_if! {
 
             /// Returns a ref to the inner smart pointer
             pub fn inner(&self) -> Arc<Mutex<T>> {
-                return self.inner.clone();
+                return Arc::clone(&self.inner);
             }
 
             /// Creates a new 'Ref' containing raw smart pointer 'inner'
@@ -71,7 +71,7 @@ cfg_if! {
         impl<T: ?Sized> Clone for Ref<T> {
             fn clone(&self) -> Self {
                 Ref {
-                    inner: self.inner.clone(),
+                    inner: Arc::clone(&self.inner),
                 }
             }
         }
