@@ -5,7 +5,7 @@ use std::{
     net::{SocketAddr, UdpSocket},
 };
 
-use naia_socket_shared::{find_available_port, find_my_ip_address, LinkConditionerConfig, Ref};
+use naia_socket_shared::{find_my_ip_address, LinkConditionerConfig, Ref};
 
 use crate::{link_conditioner::LinkConditioner, ClientSocketTrait, MessageSender};
 
@@ -25,10 +25,8 @@ impl ClientSocket {
     /// Returns a new ClientSocket, connected to the given socket address
     pub fn connect(server_socket_address: SocketAddr) -> Box<dyn ClientSocketTrait> {
         let client_ip_address = find_my_ip_address().expect("cannot find current ip address");
-        let free_socket = find_available_port(&client_ip_address).expect("no available ports");
-        let client_socket_address = format!("{}:{}", client_ip_address, free_socket);
 
-        let socket = Ref::new(UdpSocket::bind(client_socket_address).unwrap());
+        let socket = Ref::new(UdpSocket::bind((client_ip_address, 0)).unwrap());
         socket
             .borrow()
             .set_nonblocking(true)

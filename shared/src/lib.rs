@@ -18,7 +18,6 @@ extern crate cfg_if;
 /// conditions
 pub mod link_condition_logic;
 
-mod find_available_port;
 mod find_my_ip_address;
 mod impls;
 mod link_conditioner_config;
@@ -26,7 +25,6 @@ mod packet_reader;
 mod reference;
 mod time_queue;
 
-pub use find_available_port::find_available_port;
 pub use find_my_ip_address::find_my_ip_address;
 pub use impls::{Instant, Random, Timer, Timestamp};
 pub use link_conditioner_config::LinkConditionerConfig;
