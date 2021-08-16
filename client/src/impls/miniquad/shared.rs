@@ -51,10 +51,6 @@ impl JsObject {
         unsafe { naia_unwrap_to_str(self.weak(), buf.as_mut_vec().as_mut_ptr(), len as u32) };
     }
 
-    pub fn u8_array(string: &[u8]) -> JsObject {
-        unsafe { naia_create_u8_array(string.as_ptr() as _, string.len() as _) }
-    }
-
     pub fn to_u8_array(&self, buf: &mut Vec<u8>) {
         let len = unsafe { naia_u8_array_length(self.weak()) };
 
