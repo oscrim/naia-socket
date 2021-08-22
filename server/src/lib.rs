@@ -25,14 +25,14 @@ mod impls;
 mod link_conditioner;
 mod message_sender;
 mod packet;
-mod server_socket_trait;
+mod server_socket;
 
 pub use error::NaiaServerSocketError;
 pub use impls::ServerSocket;
 pub use message_sender::MessageSender;
 pub use naia_socket_shared::find_my_ip_address;
 pub use packet::Packet;
-pub use server_socket_trait::ServerSocketTrait;
+pub use server_socket::ServerSocketTrait;
 
 cfg_if! {
     if #[cfg(all(feature = "use-udp", feature = "use-webrtc"))]

@@ -1,8 +1,9 @@
 #[macro_use]
 extern crate log;
 
+use log::LevelFilter;
 use naia_server_socket::{LinkConditionerConfig, Packet, ServerSocket};
-use simple_logger;
+use simple_logger::SimpleLogger;
 use smol::io;
 
 const PING_MSG: &str = "ping";
@@ -25,7 +26,10 @@ fn main() -> io::Result<()> {
         .expect("could not parse advertised public WebRTC data address/port");
 
     smol::block_on(async {
-        simple_logger::init_with_level(log::Level::Info).expect("A logger was already initialized");
+        SimpleLogger::new()
+            .with_level(LevelFilter::Info)
+            .init()
+            .expect("A logger was already initialized");
 
         info!("Naia Server Socket Demo Started");
 

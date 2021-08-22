@@ -46,7 +46,7 @@ To run a WebRTC client on Web using wasm-bindgen: (that will be able to communic
 
 To run a WebRTC client on Web using miniquad: (that will be able to communicate with a WebRTC server)
 
-    1. Enter in your IP Address at the appropriate spot in demo/client/miniquad/src/app.rs
+    1. Enter in your IP Address at the appropriate spot in demo/client/app/src/app.rs
     2. `cargo install watchexec`   //should only need to do this once to install watchexec, which will auto-reload for you
     3. `sh demo/client/miniquad/deploy.sh`               //this will open a web browser, and hot reload
 
