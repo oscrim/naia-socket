@@ -7,25 +7,25 @@ use naia_socket_shared::{link_condition_logic, LinkConditionerConfig, TimeQueue}
 use super::{error::NaiaServerSocketError, packet::Packet};
 
 /// Used to receive packets from the Server Socket
-pub trait PacketReceiverTrait: Debug {
+pub trait PacketReceiver: Debug {
     /// Receives a packet from the Server Socket
     fn receive(&mut self) -> Result<Option<Packet>, NaiaServerSocketError>;
 }
 
 /// Used to receive packets from the Server Socket
 #[derive(Debug)]
-pub struct PacketReceiver {
+pub struct PacketReceiverImpl {
     channel_receiver: Receiver<Result<Packet, NaiaServerSocketError>>,
 }
 
-impl PacketReceiver {
+impl PacketReceiverImpl {
     /// Creates a new PacketReceiver
     pub fn new(channel_receiver: Receiver<Result<Packet, NaiaServerSocketError>>) -> Self {
-        PacketReceiver { channel_receiver }
+        PacketReceiverImpl { channel_receiver }
     }
 }
 
-impl PacketReceiverTrait for PacketReceiver {
+impl PacketReceiver for PacketReceiverImpl {
     fn receive(&mut self) -> Result<Option<Packet>, NaiaServerSocketError> {
         match self.channel_receiver.try_recv() {
             Ok(result) => match result {
@@ -41,19 +41,19 @@ impl PacketReceiverTrait for PacketReceiver {
 
 /// Used to receive packets from the Server Socket
 #[derive(Debug)]
-pub struct ConditionedPacketReceiver {
+pub struct ConditionedPacketReceiverImpl {
     channel_receiver: Receiver<Result<Packet, NaiaServerSocketError>>,
     link_conditioner_config: LinkConditionerConfig,
     time_queue: TimeQueue<Packet>,
 }
 
-impl ConditionedPacketReceiver {
+impl ConditionedPacketReceiverImpl {
     /// Creates a new PacketReceiver
     pub fn new(
         channel_receiver: Receiver<Result<Packet, NaiaServerSocketError>>,
         link_conditioner_config: &LinkConditionerConfig,
     ) -> Self {
-        ConditionedPacketReceiver {
+        ConditionedPacketReceiverImpl {
             channel_receiver,
             link_conditioner_config: link_conditioner_config.clone(),
             time_queue: TimeQueue::new(),
@@ -77,7 +77,7 @@ impl ConditionedPacketReceiver {
     }
 }
 
-impl PacketReceiverTrait for ConditionedPacketReceiver {
+impl PacketReceiver for ConditionedPacketReceiverImpl {
     fn receive(&mut self) -> Result<Option<Packet>, NaiaServerSocketError> {
         loop {
             match self.channel_receiver.try_recv() {

@@ -5,8 +5,8 @@ use std::{collections::VecDeque, net::SocketAddr};
 use naia_socket_shared::{LinkConditionerConfig, Ref};
 
 use crate::{
-    packet_receiver::ConditionedPacketReceiver, ClientSocketConfig, ClientSocketTrait, Packet,
-    PacketReceiver, PacketSender,
+    packet_receiver::ConditionedPacketReceiver, ClientSocketConfig, Packet, PacketReceiver,
+    PacketSender,
 };
 
 use super::{packet_receiver::PacketReceiverImpl, webrtc_internal::webrtc_initialize};
@@ -25,7 +25,7 @@ pub struct ClientSocket {
 
 impl ClientSocket {
     /// Returns a new ClientSocket, connected to the given socket address
-    pub fn connect(client_config: ClientSocketConfig) -> Self {
+    pub fn connect(client_config: ClientSocketConfig) -> (PacketSender, Box<dyn PacketReceiver>) {
         let message_queue = Ref::new(VecDeque::new());
         let data_channel = webrtc_initialize(
             client_config.server_address,
@@ -43,16 +43,17 @@ impl ClientSocket {
             message_queue.clone(),
         );
 
-        let client_socket = ClientSocket {
-            address: client_config.server_address,
-            message_queue,
-            packet_sender,
-            packet_receiver,
-            dropped_outgoing_messages,
-            link_conditioner_config: client_config.shared.link_condition_config.clone(),
+        let sender = packet_sender.clone();
+        let receiver: Box<dyn PacketReceiver> = {
+            let inner_receiver = Box::new(packet_receiver.clone());
+            if let Some(config) = &client_config.shared.link_condition_config {
+                Box::new(ConditionedPacketReceiver::new(inner_receiver, config))
+            } else {
+                inner_receiver
+            }
         };
 
-        client_socket
+        (sender, receiver)
     }
 }
 
@@ -62,18 +63,3 @@ unsafe impl Send for ClientSocket {}
 #[allow(unsafe_code)]
 #[cfg(feature = "multithread")]
 unsafe impl Sync for ClientSocket {}
-
-impl ClientSocketTrait for ClientSocket {
-    fn get_receiver(&self) -> Box<dyn PacketReceiver> {
-        let inner_receiver = Box::new(self.packet_receiver.clone());
-        if let Some(config) = &self.link_conditioner_config {
-            return Box::new(ConditionedPacketReceiver::new(inner_receiver, config));
-        } else {
-            return inner_receiver;
-        }
-    }
-
-    fn get_sender(&self) -> PacketSender {
-        return self.packet_sender.clone();
-    }
-}

@@ -9,8 +9,7 @@ cfg_if! {
 }
 
 use naia_client_socket::{
-    ClientSocket, ClientSocketConfig, ClientSocketTrait, Packet, PacketReceiver, PacketSender,
-    Timer,
+    ClientSocket, ClientSocketConfig, Packet, PacketReceiver, PacketSender, Timer,
 };
 
 use naia_socket_demo_shared::{get_server_address, get_shared_config, PING_MSG, PONG_MSG};
@@ -29,13 +28,11 @@ impl App {
         let client_socket_config =
             ClientSocketConfig::new(get_server_address(), get_shared_config());
 
-        let client_socket = ClientSocket::connect(client_socket_config);
-        let packet_sender = client_socket.get_sender();
-        let packet_receiver = client_socket.get_receiver();
+        let (sender, receiver) = ClientSocket::connect(client_socket_config);
 
         App {
-            sender: packet_sender,
-            receiver: packet_receiver,
+            sender,
+            receiver,
             message_count: 0,
             timer: Timer::new(Duration::from_secs(1)),
         }

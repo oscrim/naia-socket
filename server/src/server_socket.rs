@@ -12,23 +12,13 @@ use naia_socket_shared::LinkConditionerConfig;
 use super::{
     async_server_socket::AsyncServerSocketTrait,
     packet::Packet,
-    packet_receiver::{ConditionedPacketReceiver, PacketReceiver, PacketReceiverTrait},
+    packet_receiver::{ConditionedPacketReceiverImpl, PacketReceiver, PacketReceiverImpl},
     packet_sender::PacketSender,
 };
 use crate::{
     error::NaiaServerSocketError, executor, impls::ServerSocket as AsyncServerSocket,
     ServerSocketConfig,
 };
-
-/// Defines the functionality of a Naia Server Socket
-pub trait ServerSocketTrait: Debug + Send + Sync {
-    /// Gets a PacketReceiver you can use to receive messages from the Server
-    /// Socket
-    fn get_receiver(&self) -> Box<dyn PacketReceiverTrait>;
-    /// Gets a PacketSender you can use to send messages through the Server
-    /// Socket
-    fn get_sender(&self) -> PacketSender;
-}
 
 /// Server Socket is able to send and receive messages from remote Clients
 #[derive(Debug)]
@@ -40,7 +30,9 @@ pub struct ServerSocket {
 
 impl ServerSocket {
     /// Returns a new ServerSocket, listening at the given socket addresses
-    pub fn listen(server_socket_config: ServerSocketConfig) -> Self {
+    pub fn listen(
+        server_socket_config: ServerSocketConfig,
+    ) -> (PacketSender, Box<dyn PacketReceiver>) {
         // Set up receiver loop
         let (from_client_sender, from_client_receiver) = channel::unbounded();
         let (sender_sender, sender_receiver) = channel::bounded(1);
@@ -75,28 +67,17 @@ impl ServerSocket {
         })
         .detach();
 
-        let socket = ServerSocket {
-            to_client_sender,
-            from_client_receiver,
-            link_conditioner_config: server_socket_config.shared.link_condition_config.clone(),
-        };
+        let conditioner_config = server_socket_config.shared.link_condition_config.clone();
 
-        socket
-    }
-}
-
-impl ServerSocketTrait for ServerSocket {
-    fn get_receiver(&self) -> Box<dyn PacketReceiverTrait> {
-        match &self.link_conditioner_config {
-            Some(config) => Box::new(ConditionedPacketReceiver::new(
-                self.from_client_receiver.clone(),
+        let receiver: Box<dyn PacketReceiver> = match &conditioner_config {
+            Some(config) => Box::new(ConditionedPacketReceiverImpl::new(
+                from_client_receiver.clone(),
                 config,
             )),
-            None => Box::new(PacketReceiver::new(self.from_client_receiver.clone())),
-        }
-    }
+            None => Box::new(PacketReceiverImpl::new(from_client_receiver.clone())),
+        };
+        let sender = PacketSender::new(to_client_sender.clone());
 
-    fn get_sender(&self) -> PacketSender {
-        PacketSender::new(self.to_client_sender.clone())
+        (sender, receiver)
     }
 }

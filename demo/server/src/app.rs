@@ -1,12 +1,10 @@
-use naia_server_socket::{
-    Packet, PacketReceiverTrait, PacketSender, ServerSocket, ServerSocketConfig, ServerSocketTrait,
-};
+use naia_server_socket::{Packet, PacketReceiver, PacketSender, ServerSocket, ServerSocketConfig};
 
 use naia_socket_demo_shared::{get_server_address, get_shared_config, PING_MSG, PONG_MSG};
 
 pub struct App {
     sender: PacketSender,
-    receiver: Box<dyn PacketReceiverTrait>,
+    receiver: Box<dyn PacketReceiver>,
 }
 
 impl App {
@@ -26,12 +24,9 @@ impl App {
             get_shared_config(),
         );
 
-        let server_socket = ServerSocket::listen(server_socket_config);
+        let (sender, receiver) = ServerSocket::listen(server_socket_config);
 
-        App {
-            sender: server_socket.get_sender(),
-            receiver: server_socket.get_receiver(),
-        }
+        App { sender, receiver }
     }
 
     pub fn update(&mut self) {

@@ -3,8 +3,7 @@ use std::{collections::VecDeque, net::SocketAddr};
 use naia_socket_shared::LinkConditionerConfig;
 
 use crate::{
-    packet_receiver::ConditionedPacketReceiver, ClientSocketConfig, ClientSocketTrait,
-    PacketReceiver, PacketSender,
+    packet_receiver::ConditionedPacketReceiver, ClientSocketConfig, PacketReceiver, PacketSender,
 };
 
 use super::{
@@ -23,7 +22,7 @@ pub struct ClientSocket {
 
 impl ClientSocket {
     /// Returns a new ClientSocket, connected to the given socket address
-    pub fn connect(client_config: ClientSocketConfig) -> Self {
+    pub fn connect(client_config: ClientSocketConfig) -> (PacketSender, Box<dyn PacketReceiver>) {
         unsafe {
             MESSAGE_QUEUE = Some(VecDeque::new());
             ERROR_QUEUE = Some(VecDeque::new());
@@ -33,27 +32,18 @@ impl ClientSocket {
             );
         }
 
-        let client_socket = ClientSocket {
-            address: client_config.server_address,
-            packet_sender: PacketSender::new(),
-            link_conditioner_config: client_config.shared.link_condition_config.clone(),
+        let conditioner_config = client_config.shared.link_condition_config.clone();
+
+        let sender = PacketSender::new();
+        let receiver: Box<dyn PacketReceiver> = {
+            let inner_receiver = Box::new(PacketReceiverImpl::new());
+            if let Some(config) = &conditioner_config {
+                Box::new(ConditionedPacketReceiver::new(inner_receiver, config))
+            } else {
+                inner_receiver
+            }
         };
 
-        client_socket
-    }
-}
-
-impl ClientSocketTrait for ClientSocket {
-    fn get_receiver(&self) -> Box<dyn PacketReceiver> {
-        let inner_receiver = Box::new(PacketReceiverImpl::new());
-        if let Some(config) = &self.link_conditioner_config {
-            return Box::new(ConditionedPacketReceiver::new(inner_receiver, config));
-        } else {
-            return inner_receiver;
-        }
-    }
-
-    fn get_sender(&self) -> PacketSender {
-        return self.packet_sender.clone();
+        (sender, receiver)
     }
 }

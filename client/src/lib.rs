@@ -26,14 +26,12 @@ pub use naia_socket_shared::{
     find_my_ip_address, LinkConditionerConfig, SocketSharedConfig, Timer,
 };
 
-mod client_socket;
 mod config;
 mod error;
 mod impls;
 mod packet;
 mod packet_receiver;
 
-pub use client_socket::ClientSocketTrait;
 pub use config::ClientSocketConfig;
 pub use error::NaiaClientSocketError;
 pub use impls::{ClientSocket, PacketSender};
