@@ -1,11 +1,8 @@
 extern crate log;
-use log::info;
 
 use std::{collections::VecDeque, net::SocketAddr};
 
-use crate::{error::NaiaClientSocketError, Packet};
-
-use naia_socket_shared::Ref;
+use log::info;
 
 use wasm_bindgen::{prelude::*, JsCast, JsValue};
 use web_sys::{
@@ -13,6 +10,10 @@ use web_sys::{
     RtcDataChannelType, RtcIceCandidate, RtcIceCandidateInit, RtcPeerConnection, RtcSdpType,
     RtcSessionDescriptionInit, XmlHttpRequest,
 };
+
+use naia_socket_shared::Ref;
+
+use crate::Packet;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct SessionAnswer {
@@ -46,7 +47,7 @@ pub struct IceServerConfig {
 pub fn webrtc_initialize(
     socket_address: SocketAddr,
     rtc_endpoint_path: String,
-    msg_queue: Ref<VecDeque<Result<Option<Packet>, NaiaClientSocketError>>>,
+    msg_queue: Ref<VecDeque<Packet>>,
 ) -> RtcDataChannel {
     let server_url_str = format!("http://{}/{}", socket_address, rtc_endpoint_path);
 
@@ -70,9 +71,7 @@ pub fn webrtc_initialize(
                     let uarray: js_sys::Uint8Array = js_sys::Uint8Array::new(&arraybuf);
                     let mut body = vec![0; uarray.length() as usize];
                     uarray.copy_to(&mut body[..]);
-                    msg_queue_clone_2
-                        .borrow_mut()
-                        .push_back(Ok(Some(Packet::new(body))));
+                    msg_queue_clone_2.borrow_mut().push_back(Packet::new(body));
                 }
             });
         let channel_onmsg_closure = Closure::wrap(channel_onmsg_func);

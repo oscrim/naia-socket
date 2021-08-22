@@ -1,15 +1,17 @@
 use std::collections::VecDeque;
 
-use crate::Packet;
-use naia_socket_shared::Ref;
-use std::error::Error;
 use web_sys::RtcDataChannel;
+
+use naia_socket_shared::Ref;
+
+use crate::{NaiaClientSocketError, Packet, PacketReceiverTrait};
 
 /// Handles receiving messages from the Server through a given Client Socket
 #[derive(Clone, Debug)]
 pub struct PacketReceiver {
     data_channel: RtcDataChannel,
     dropped_outgoing_messages: Ref<VecDeque<Packet>>,
+    message_queue: Ref<VecDeque<Packet>>,
 }
 
 impl PacketReceiver {
@@ -18,20 +20,25 @@ impl PacketReceiver {
     pub fn new(
         data_channel: RtcDataChannel,
         dropped_outgoing_messages: Ref<VecDeque<Packet>>,
+        message_queue: Ref<VecDeque<Packet>>,
     ) -> Self {
         PacketReceiver {
             data_channel,
             dropped_outgoing_messages,
+            message_queue,
         }
     }
+}
 
-    /// Send a Packet to the Server
-    pub fn send(&mut self, packet: Packet) -> Result<(), Box<dyn Error + Send + Sync>> {
-        if let Err(_) = self.data_channel.send_with_u8_array(&packet.payload()) {
-            self.dropped_outgoing_messages
-                .borrow_mut()
-                .push_back(packet);
+impl PacketReceiverTrait for PacketReceiver {
+    fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
+        match self.message_queue.borrow_mut().pop_front() {
+            Some(packet) => {
+                return Ok(Some(packet));
+            }
+            None => {
+                return Ok(None);
+            }
         }
-        Ok(())
     }
 }

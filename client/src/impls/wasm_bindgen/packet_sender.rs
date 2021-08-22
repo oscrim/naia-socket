@@ -1,9 +1,13 @@
 use std::collections::VecDeque;
+use std::error::Error;
+
+use log::info;
+
+use web_sys::RtcDataChannel;
+
+use naia_socket_shared::Ref;
 
 use crate::Packet;
-use naia_socket_shared::Ref;
-use std::error::Error;
-use web_sys::RtcDataChannel;
 
 /// Handles sending messages to the Server for a given Client Socket
 #[derive(Clone, Debug)]
@@ -27,11 +31,29 @@ impl PacketSender {
 
     /// Send a Packet to the Server
     pub fn send(&mut self, packet: Packet) -> Result<(), Box<dyn Error + Send + Sync>> {
+        self.resend_dropped_messages();
+
         if let Err(_) = self.data_channel.send_with_u8_array(&packet.payload()) {
             self.dropped_outgoing_messages
                 .borrow_mut()
                 .push_back(packet);
         }
         Ok(())
+    }
+
+    fn resend_dropped_messages(&mut self) {
+        if !self.dropped_outgoing_messages.borrow().is_empty() {
+            if let Some(dropped_packets) = {
+                let mut dom = self.dropped_outgoing_messages.borrow_mut();
+                let dropped_packets: Vec<Packet> = dom.drain(..).collect::<Vec<Packet>>();
+                Some(dropped_packets)
+            } {
+                for dropped_packet in dropped_packets {
+                    self.send(dropped_packet).unwrap_or_else(|err| {
+                        info!("Can't send dropped packet. Original Error: {:?}", err)
+                    });
+                }
+            }
+        }
     }
 }

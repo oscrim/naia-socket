@@ -43,7 +43,7 @@ async fn listen(server_config: ServerSocketConfig, session_endpoint: SessionEndp
     info!(
         "Session initiator available at POST http://{}/{}",
         listener.get_ref().local_addr().unwrap(),
-        RTC_URL_PATH.get().unwrap()
+        server_config.shared.rtc_endpoint_path
     );
 
     loop {
