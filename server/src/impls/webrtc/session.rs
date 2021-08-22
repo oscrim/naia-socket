@@ -20,8 +20,10 @@ use log::info;
 
 use webrtc_unreliable::SessionEndpoint;
 
+use crate::executor;
+
 pub fn start_session_server(socket_address: SocketAddr, session_endpoint: SessionEndpoint) {
-    smol::spawn(async move {
+    executor::spawn(async move {
         listen(
             session_endpoint.clone(),
             Async::<TcpListener>::bind(socket_address).unwrap(),
@@ -45,7 +47,7 @@ async fn listen(session_endpoint: SessionEndpoint, listener: Async<TcpListener>)
         let session_endpoint_clone = session_endpoint.clone();
 
         // Spawn a background task serving this connection.
-        smol::spawn(async move {
+        executor::spawn(async move {
             serve(session_endpoint_clone, Arc::new(response_stream)).await;
         })
         .detach();

@@ -25,39 +25,37 @@ fn main() -> io::Result<()> {
         .parse()
         .expect("could not parse advertised public WebRTC data address/port");
 
-    smol::block_on(async {
-        SimpleLogger::new()
-            .with_level(LevelFilter::Info)
-            .init()
-            .expect("A logger was already initialized");
+    SimpleLogger::new()
+        .with_level(LevelFilter::Info)
+        .init()
+        .expect("A logger was already initialized");
 
-        info!("Naia Server Socket Demo started");
+    info!("Naia Server Socket Demo started");
 
-        let server_socket =
-            ServerSocket::listen(session_listen_addr, webrtc_listen_addr, public_webrtc_addr);
-        //.with_link_conditioner(&LinkConditionerConfig::good_condition());
+    let server_socket =
+        ServerSocket::listen(session_listen_addr, webrtc_listen_addr, public_webrtc_addr);
+    //.with_link_conditioner(&LinkConditionerConfig::good_condition());
 
-        let sender = server_socket.get_sender();
-        let mut receiver = server_socket.get_receiver();
+    let sender = server_socket.get_sender();
+    let mut receiver = server_socket.get_receiver();
 
-        loop {
-            match receiver.receive() {
-                Ok(Some(packet)) => {
-                    let address = packet.address();
-                    let message = String::from_utf8_lossy(packet.payload());
-                    info!("Server recv <- {}: {}", address, message);
+    loop {
+        match receiver.receive() {
+            Ok(Some(packet)) => {
+                let address = packet.address();
+                let message = String::from_utf8_lossy(packet.payload());
+                info!("Server recv <- {}: {}", address, message);
 
-                    if message.eq(PING_MSG) {
-                        let to_client_message: String = PONG_MSG.to_string();
-                        info!("Server send -> {}: {}", address, to_client_message);
-                        sender.send(Packet::new(address, to_client_message.into_bytes()));
-                    }
-                }
-                Ok(None) => {}
-                Err(error) => {
-                    info!("Server Error: {}", error);
+                if message.eq(PING_MSG) {
+                    let to_client_message: String = PONG_MSG.to_string();
+                    info!("Server send -> {}: {}", address, to_client_message);
+                    sender.send(Packet::new(address, to_client_message.into_bytes()));
                 }
             }
+            Ok(None) => {}
+            Err(error) => {
+                info!("Server Error: {}", error);
+            }
         }
-    })
+    }
 }

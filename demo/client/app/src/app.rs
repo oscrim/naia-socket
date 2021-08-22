@@ -8,9 +8,7 @@ cfg_if! {
     }
 }
 
-use naia_client_socket::{
-    ClientSocket, ClientSocketTrait, LinkConditionerConfig, MessageSender, Packet,
-};
+use naia_client_socket::{ClientSocket, ClientSocketTrait, MessageSender, Packet};
 
 const PING_MSG: &str = "ping";
 const PONG_MSG: &str = "pong";
@@ -37,8 +35,8 @@ impl App {
             .parse()
             .expect("couldn't parse input IP address");
 
-        let mut client_socket = ClientSocket::connect(server_ip_address)
-            .with_link_conditioner(&LinkConditionerConfig::good_condition());
+        let mut client_socket = ClientSocket::connect(server_ip_address);
+        //.with_link_conditioner(&LinkConditionerConfig::good_condition());
         let mut message_sender = client_socket.get_sender();
 
         message_sender

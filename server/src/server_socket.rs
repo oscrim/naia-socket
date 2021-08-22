@@ -15,7 +15,7 @@ use super::{
     packet_receiver::{ConditionedPacketReceiver, PacketReceiver, PacketReceiverTrait},
     packet_sender::PacketSender,
 };
-use crate::{error::NaiaServerSocketError, impls::ServerSocket as AsyncServerSocket};
+use crate::{error::NaiaServerSocketError, executor, impls::ServerSocket as AsyncServerSocket};
 
 /// Defines the functionality of a Naia Server Socket
 pub trait ServerSocketTrait: Debug + Send + Sync {
@@ -48,7 +48,7 @@ impl ServerSocket {
         let (from_client_sender, from_client_receiver) = channel::unbounded();
         let (sender_sender, sender_receiver) = channel::bounded(1);
 
-        smol::spawn(async move {
+        executor::spawn(async move {
             // Create async socket
             let mut async_socket = AsyncServerSocket::listen(
                 session_listen_addr,
@@ -69,7 +69,7 @@ impl ServerSocket {
         // Set up sender loop
         let (to_client_sender, to_client_receiver) = channel::unbounded();
 
-        smol::spawn(async move {
+        executor::spawn(async move {
             // Create async socket
             let mut async_sender = sender_receiver.recv().unwrap();
 

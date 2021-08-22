@@ -36,3 +36,5 @@ smol = { version = "1.2.4" }
 async-dup = { version = "1.2.2", optional = true }
 http = { version = "0.2", optional = true }
 crossbeam = { version = "0.8" }
+once_cell = "1.4.1"
+futures-lite = "1.11.0"
