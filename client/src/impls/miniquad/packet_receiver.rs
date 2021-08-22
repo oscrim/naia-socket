@@ -1,7 +1,6 @@
-use std::error::Error;
+use super::shared::{naia_resend_dropped_messages, ERROR_QUEUE, MESSAGE_QUEUE};
 
-use super::shared::{naia_create_u8_array, naia_send};
-use crate::Packet;
+use crate::{error::NaiaClientSocketError, Packet, PacketReceiverTrait};
 
 /// Handles receiving messages from the Server through a given Client Socket
 #[derive(Clone, Debug)]
@@ -13,17 +12,26 @@ impl PacketReceiver {
     pub fn new() -> Self {
         PacketReceiver {}
     }
+}
 
-    /// Send a Packet to the Server
-    pub fn send(&mut self, packet: Packet) -> Result<(), Box<dyn Error + Send + Sync>> {
+impl PacketReceiverTrait for PacketReceiver {
+    fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
         unsafe {
-            let payload: &[u8] = packet.payload();
-            let ptr = payload.as_ptr();
-            let len = payload.len();
-            let js_obj = naia_create_u8_array(ptr as _, len as _);
-            naia_send(js_obj);
-        }
+            naia_resend_dropped_messages();
 
-        Ok(())
+            if let Some(msg_queue) = &mut MESSAGE_QUEUE {
+                if let Some(message) = msg_queue.pop_front() {
+                    return Ok(Some(Packet::new_raw(message)));
+                }
+            }
+
+            if let Some(error_queue) = &mut ERROR_QUEUE {
+                if let Some(error) = error_queue.pop_front() {
+                    return Err(NaiaClientSocketError::Message(error));
+                }
+            }
+        };
+
+        Ok(None)
     }
 }
