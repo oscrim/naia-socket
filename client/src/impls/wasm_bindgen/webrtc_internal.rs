@@ -45,9 +45,10 @@ pub struct IceServerConfig {
 #[allow(unused_must_use)]
 pub fn webrtc_initialize(
     socket_address: SocketAddr,
+    rtc_endpoint_path: String,
     msg_queue: Ref<VecDeque<Result<Option<Packet>, NaiaClientSocketError>>>,
 ) -> RtcDataChannel {
-    let server_url_str = format!("http://{}/new_rtc_session", socket_address);
+    let server_url_str = format!("http://{}/{}", socket_address, rtc_endpoint_path);
 
     let peer: RtcPeerConnection = RtcPeerConnection::new().unwrap();
 

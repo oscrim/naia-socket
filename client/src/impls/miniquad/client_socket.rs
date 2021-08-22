@@ -5,8 +5,8 @@ use super::shared::{
 };
 
 use crate::{
-    error::NaiaClientSocketError, link_conditioner::LinkConditioner, ClientSocketTrait,
-    MessageSender, Packet,
+    error::NaiaClientSocketError, link_conditioner::LinkConditioner, ClientSocketConfig,
+    ClientSocketTrait, MessageSender, Packet,
 };
 
 use naia_socket_shared::LinkConditionerConfig;
@@ -21,17 +21,26 @@ pub struct ClientSocket {
 
 impl ClientSocket {
     /// Returns a new ClientSocket, connected to the given socket address
-    pub fn connect(server_socket_address: SocketAddr) -> Box<dyn ClientSocketTrait> {
+    pub fn connect(client_config: ClientSocketConfig) -> Box<dyn ClientSocketTrait> {
         unsafe {
             MESSAGE_QUEUE = Some(VecDeque::new());
             ERROR_QUEUE = Some(VecDeque::new());
-            naia_connect(JsObject::string(server_socket_address.to_string().as_str()));
+            naia_connect(
+                JsObject::string(client_config.server_address.to_string().as_str()),
+                JsObject::string(client_config.shared.rtc_endpoint_path.as_str()),
+            );
         }
 
-        Box::new(ClientSocket {
-            address: server_socket_address,
+        let mut client_socket: Box<dyn ClientSocketTrait> = Box::new(ClientSocket {
+            address: client_config.server_address,
             message_sender: MessageSender::new(),
-        })
+        });
+
+        if let Some(config) = &client_config.shared.link_condition_config {
+            client_socket = client_socket.with_link_conditioner(config);
+        }
+
+        client_socket
     }
 }
 

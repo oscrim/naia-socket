@@ -4,7 +4,7 @@ pub static mut MESSAGE_QUEUE: Option<VecDeque<Box<[u8]>>> = None;
 pub static mut ERROR_QUEUE: Option<VecDeque<String>> = None;
 
 extern "C" {
-    pub fn naia_connect(server_socket_address: JsObject);
+    pub fn naia_connect(server_socket_address: JsObject, rtc_path: JsObject);
     pub fn naia_send(message: JsObject);
     pub fn naia_resend_dropped_messages();
     pub fn naia_free_object(js_object: JsObjectWeak);

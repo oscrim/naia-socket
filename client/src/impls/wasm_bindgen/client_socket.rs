@@ -4,8 +4,8 @@ use log::info;
 use std::{collections::VecDeque, net::SocketAddr};
 
 use crate::{
-    error::NaiaClientSocketError, link_conditioner::LinkConditioner, ClientSocketTrait,
-    MessageSender, Packet,
+    error::NaiaClientSocketError, link_conditioner::LinkConditioner, ClientSocketConfig,
+    ClientSocketTrait, MessageSender, Packet,
 };
 
 use naia_socket_shared::{LinkConditionerConfig, Ref};
@@ -24,21 +24,31 @@ pub struct ClientSocket {
 
 impl ClientSocket {
     /// Returns a new ClientSocket, connected to the given socket address
-    pub fn connect(server_socket_address: SocketAddr) -> Box<dyn ClientSocketTrait> {
+    pub fn connect(client_config: ClientSocketConfig) -> Box<dyn ClientSocketTrait> {
         let message_queue = Ref::new(VecDeque::new());
-        let data_channel = webrtc_initialize(server_socket_address, message_queue.clone());
+        let data_channel = webrtc_initialize(
+            client_config.server_address,
+            client_config.shared.rtc_endpoint_path,
+            message_queue.clone(),
+        );
 
         let dropped_outgoing_messages = Ref::new(VecDeque::new());
 
         let message_sender =
             MessageSender::new(data_channel.clone(), dropped_outgoing_messages.clone());
 
-        Box::new(ClientSocket {
-            address: server_socket_address,
+        let mut client_socket: Box<dyn ClientSocketTrait> = Box::new(ClientSocket {
+            address: client_config.server_address,
             message_queue,
             message_sender,
             dropped_outgoing_messages,
-        })
+        });
+
+        if let Some(config) = &client_config.shared.link_condition_config {
+            client_socket = client_socket.with_link_conditioner(config);
+        }
+
+        client_socket
     }
 }
 

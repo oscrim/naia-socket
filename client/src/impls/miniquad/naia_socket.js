@@ -7,7 +7,7 @@ const naia_socket = {
     unique_js_id: 0,
 
     plugin: function (importObject) {
-        importObject.env.naia_connect = function (address) { naia_socket.connect(address); };
+        importObject.env.naia_connect = function (address, rtc_path) { naia_socket.connect(address, rtc_path); };
         importObject.env.naia_send = function (message) { naia_socket.send(message); };
         importObject.env.naia_resend_dropped_messages = function() { naia_socket.resend_dropped_messages(); };
         importObject.env.naia_create_string = function (buf, max_len) { return naia_socket.js_create_string(buf, max_len); };
@@ -21,10 +21,11 @@ const naia_socket = {
         importObject.env.naia_now = function () { return Date.now(); };
     },
 
-    connect: function (server_socket_address) {
+    connect: function (server_socket_address, rtc_path) {
         let _this = this;
         let server_socket_address_string = naia_socket.get_js_object(server_socket_address);
-        let SESSION_ADDRESS = "http://" + server_socket_address_string + "/new_rtc_session";
+        let rtc_path_string = naia_socket.get_js_object(rtc_path);
+        let SESSION_ADDRESS = "http://" + server_socket_address_string + "/" + rtc_path_string;
 
         let peer = new RTCPeerConnection(null);
 

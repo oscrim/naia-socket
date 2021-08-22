@@ -1,4 +1,4 @@
-use std::{net::SocketAddr, time::Duration};
+use std::time::Duration;
 
 cfg_if! {
     if #[cfg(feature = "mquad")] {
@@ -8,10 +8,11 @@ cfg_if! {
     }
 }
 
-use naia_client_socket::{ClientSocket, ClientSocketTrait, MessageSender, Packet, Timer};
+use naia_client_socket::{
+    ClientSocket, ClientSocketConfig, ClientSocketTrait, MessageSender, Packet, Timer,
+};
 
-const PING_MSG: &str = "ping";
-const PONG_MSG: &str = "pong";
+use naia_socket_demo_shared::{get_server_address, get_shared_config, PING_MSG, PONG_MSG};
 
 pub struct App {
     client_socket: Box<dyn ClientSocketTrait>,
@@ -24,14 +25,10 @@ impl App {
     pub fn new() -> App {
         info!("Naia Client Socket Demo started");
 
-        // Put your Server's IP Address here!, can't easily find this automatically from the browser
-        // Note: a 127.0.0.1 IP address will not function correctly on Firefox
-        let server_ip_address: SocketAddr = "127.0.0.1:14191"
-            .parse()
-            .expect("couldn't parse input IP address");
+        let client_socket_config =
+            ClientSocketConfig::new(get_server_address(), get_shared_config());
 
-        let mut client_socket = ClientSocket::connect(server_ip_address);
-        //.with_link_conditioner(&LinkConditionerConfig::good_condition());
+        let mut client_socket = ClientSocket::connect(client_socket_config);
         let mut message_sender = client_socket.get_sender();
 
         message_sender

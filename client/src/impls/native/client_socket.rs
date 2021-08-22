@@ -9,7 +9,7 @@ use naia_socket_shared::{find_my_ip_address, LinkConditionerConfig, Ref};
 
 use crate::{link_conditioner::LinkConditioner, ClientSocketTrait, MessageSender};
 
-use crate::{error::NaiaClientSocketError, Packet};
+use crate::{error::NaiaClientSocketError, ClientSocketConfig, Packet};
 
 /// A client-side socket which communicates with an underlying unordered &
 /// unreliable protocol
@@ -23,7 +23,7 @@ pub struct ClientSocket {
 
 impl ClientSocket {
     /// Returns a new ClientSocket, connected to the given socket address
-    pub fn connect(server_socket_address: SocketAddr) -> Box<dyn ClientSocketTrait> {
+    pub fn connect(client_config: ClientSocketConfig) -> Box<dyn ClientSocketTrait> {
         let client_ip_address = find_my_ip_address().expect("cannot find current ip address");
 
         let socket = Ref::new(UdpSocket::bind((client_ip_address, 0)).unwrap());
@@ -32,14 +32,20 @@ impl ClientSocket {
             .set_nonblocking(true)
             .expect("can't set socket to non-blocking!");
 
-        let message_sender = MessageSender::new(server_socket_address, socket.clone());
+        let message_sender = MessageSender::new(client_config.server_address, socket.clone());
 
-        Box::new(ClientSocket {
-            address: server_socket_address,
+        let mut client_socket: Box<dyn ClientSocketTrait> = Box::new(ClientSocket {
+            address: client_config.server_address,
             socket,
             receive_buffer: vec![0; 1472],
             message_sender,
-        })
+        });
+
+        if let Some(config) = &client_config.shared.link_condition_config {
+            client_socket = client_socket.with_link_conditioner(config);
+        }
+
+        client_socket
     }
 }
 

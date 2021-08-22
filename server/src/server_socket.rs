@@ -47,11 +47,11 @@ impl ServerSocket {
         let (from_client_sender, from_client_receiver) = channel::unbounded();
         let (sender_sender, sender_receiver) = channel::bounded(1);
 
-        let shared_config = server_socket_config.clone();
+        let server_config = server_socket_config.clone();
 
         executor::spawn(async move {
             // Create async socket
-            let mut async_socket = AsyncServerSocket::listen(shared_config).await;
+            let mut async_socket = AsyncServerSocket::listen(server_config).await;
 
             sender_sender.send(async_socket.get_sender()).unwrap(); //TODO: handle result..
 
