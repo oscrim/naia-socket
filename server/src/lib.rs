@@ -20,19 +20,20 @@ extern crate cfg_if;
 
 pub use naia_socket_shared::LinkConditionerConfig;
 
+mod async_server_socket;
 mod error;
 mod impls;
-mod link_conditioner;
-mod message_sender;
 mod packet;
+mod packet_receiver;
+mod packet_sender;
 mod server_socket;
 
 pub use error::NaiaServerSocketError;
-pub use impls::ServerSocket;
-pub use message_sender::MessageSender;
 pub use naia_socket_shared::find_my_ip_address;
 pub use packet::Packet;
-pub use server_socket::ServerSocketTrait;
+pub use packet_receiver::PacketReceiver;
+pub use packet_sender::PacketSender;
+pub use server_socket::{ServerSocket, ServerSocketTrait};
 
 cfg_if! {
     if #[cfg(all(feature = "use-udp", feature = "use-webrtc"))]

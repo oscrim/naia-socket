@@ -9,14 +9,9 @@ use webrtc_unreliable::{
 use futures_channel::mpsc;
 use futures_util::{pin_mut, select, FutureExt, StreamExt};
 
-use naia_socket_shared::LinkConditionerConfig;
-
 use super::session::start_session_server;
 
-use crate::{
-    error::NaiaServerSocketError, link_conditioner::LinkConditioner, message_sender::MessageSender,
-    Packet, ServerSocketTrait,
-};
+use crate::{async_server_socket::AsyncServerSocketTrait, error::NaiaServerSocketError, Packet};
 
 const CLIENT_CHANNEL_SIZE: usize = 8;
 
@@ -35,7 +30,7 @@ impl ServerSocket {
         session_listen_addr: SocketAddr,
         webrtc_listen_addr: SocketAddr,
         public_webrtc_addr: SocketAddr,
-    ) -> Box<dyn ServerSocketTrait> {
+    ) -> Self {
         let (to_client_sender, to_client_receiver) = mpsc::channel(CLIENT_CHANNEL_SIZE);
 
         let rtc_server = RtcServer::new(webrtc_listen_addr, public_webrtc_addr).await;
@@ -48,12 +43,12 @@ impl ServerSocket {
 
         start_session_server(session_listen_addr, socket.rtc_server.session_endpoint());
 
-        Box::new(socket)
+        socket
     }
 }
 
 #[async_trait]
-impl ServerSocketTrait for ServerSocket {
+impl AsyncServerSocketTrait for ServerSocket {
     async fn receive(&mut self) -> Result<Packet, NaiaServerSocketError> {
         enum Next {
             FromClientMessage(Result<Packet, IoError>),
@@ -115,15 +110,8 @@ impl ServerSocketTrait for ServerSocket {
         }
     }
 
-    fn get_sender(&mut self) -> MessageSender {
-        return MessageSender::new(self.to_client_sender.clone());
-    }
-
-    fn with_link_conditioner(
-        self: Box<Self>,
-        config: &LinkConditionerConfig,
-    ) -> Box<dyn ServerSocketTrait> {
-        Box::new(LinkConditioner::new(config, self))
+    fn get_sender(&self) -> mpsc::Sender<Packet> {
+        return self.to_client_sender.clone();
     }
 }
 

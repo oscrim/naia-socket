@@ -2,7 +2,7 @@
 extern crate log;
 
 use log::LevelFilter;
-use naia_server_socket::{LinkConditionerConfig, Packet, ServerSocket};
+use naia_server_socket::{LinkConditionerConfig, Packet, ServerSocket, ServerSocketTrait};
 use simple_logger::SimpleLogger;
 use smol::io;
 
@@ -33,16 +33,16 @@ fn main() -> io::Result<()> {
 
         info!("Naia Server Socket Demo Started");
 
-        let mut server_socket =
+        let server_socket =
             ServerSocket::listen(session_listen_addr, webrtc_listen_addr, public_webrtc_addr)
-                .await
                 .with_link_conditioner(&LinkConditionerConfig::good_condition());
 
-        let mut sender = server_socket.get_sender();
+        let sender = server_socket.get_sender();
+        let receiver = server_socket.get_receiver();
 
         loop {
-            match server_socket.receive().await {
-                Ok(packet) => {
+            match receiver.receive() {
+                Ok(Some(packet)) => {
                     let address = packet.address();
                     let message = String::from_utf8_lossy(packet.payload());
                     info!("Server recv <- {}: {}", address, message);
@@ -50,12 +50,10 @@ fn main() -> io::Result<()> {
                     if message.eq(PING_MSG) {
                         let to_client_message: String = PONG_MSG.to_string();
                         info!("Server send -> {}: {}", address, to_client_message);
-                        sender
-                            .send(Packet::new(address, to_client_message.into_bytes()))
-                            .await
-                            .expect("send error");
+                        sender.send(Packet::new(address, to_client_message.into_bytes()));
                     }
                 }
+                Ok(None) => {}
                 Err(error) => {
                     info!("Server Error: {}", error);
                 }

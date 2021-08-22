@@ -9,7 +9,7 @@ use std::{
 
 use naia_socket_shared::LinkConditionerConfig;
 
-use crate::{error::NaiaServerSocketError, Packet, ServerSocketTrait};
+use crate::{error::NaiaServerSocketError, AsyncServerSocketTrait, Packet};
 
 use crate::{link_conditioner::LinkConditioner, message_sender::MessageSender};
 
@@ -31,23 +31,23 @@ impl ServerSocket {
         session_listen_addr: SocketAddr,
         _webrtc_listen_addr: SocketAddr,
         _public_webrtc_addr: SocketAddr,
-    ) -> Box<dyn ServerSocketTrait> {
+    ) -> Self {
         let socket = Async::new(UdpSocket::bind(&session_listen_addr).unwrap()).unwrap();
 
         let (to_client_sender, to_client_receiver) = mpsc::channel(CLIENT_CHANNEL_SIZE);
 
-        Box::new(ServerSocket {
+        ServerSocket {
             socket,
             to_client_sender,
             to_client_receiver,
             receive_buffer: vec![0; 0x10000], /* Hopefully get rid of this one day.. next version
                                                * of webrtc-unreliable should make that happen */
-        })
+        }
     }
 }
 
 #[async_trait]
-impl ServerSocketTrait for ServerSocket {
+impl AsyncServerSocketTrait for ServerSocket {
     async fn receive(&mut self) -> Result<Packet, NaiaServerSocketError> {
         enum Next {
             FromClientMessage(Result<(usize, SocketAddr), IoError>),
@@ -103,14 +103,7 @@ impl ServerSocketTrait for ServerSocket {
         }
     }
 
-    fn get_sender(&mut self) -> MessageSender {
-        return MessageSender::new(self.to_client_sender.clone());
-    }
-
-    fn with_link_conditioner(
-        self: Box<Self>,
-        config: &LinkConditionerConfig,
-    ) -> Box<dyn ServerSocketTrait> {
-        Box::new(LinkConditioner::new(config, self))
+    fn get_sender(&self) -> MessageSender {
+        return self.to_client_sender.clone();
     }
 }
