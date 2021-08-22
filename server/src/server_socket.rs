@@ -1,4 +1,4 @@
-use std::{fmt::Debug, net::SocketAddr};
+use std::fmt::Debug;
 
 use crossbeam::{
     channel,
@@ -15,7 +15,10 @@ use super::{
     packet_receiver::{ConditionedPacketReceiver, PacketReceiver, PacketReceiverTrait},
     packet_sender::PacketSender,
 };
-use crate::{error::NaiaServerSocketError, executor, impls::ServerSocket as AsyncServerSocket};
+use crate::{
+    error::NaiaServerSocketError, executor, impls::ServerSocket as AsyncServerSocket,
+    ServerSocketConfig,
+};
 
 /// Defines the functionality of a Naia Server Socket
 pub trait ServerSocketTrait: Debug + Send + Sync {
@@ -39,23 +42,16 @@ pub struct ServerSocket {
 
 impl ServerSocket {
     /// Returns a new ServerSocket, listening at the given socket addresses
-    pub fn listen(
-        session_listen_addr: SocketAddr,
-        webrtc_listen_addr: SocketAddr,
-        public_webrtc_addr: SocketAddr,
-    ) -> Self {
+    pub fn listen(server_socket_config: ServerSocketConfig) -> Self {
         // Set up receiver loop
         let (from_client_sender, from_client_receiver) = channel::unbounded();
         let (sender_sender, sender_receiver) = channel::bounded(1);
 
+        let shared_config = server_socket_config.clone();
+
         executor::spawn(async move {
             // Create async socket
-            let mut async_socket = AsyncServerSocket::listen(
-                session_listen_addr,
-                webrtc_listen_addr,
-                public_webrtc_addr,
-            )
-            .await;
+            let mut async_socket = AsyncServerSocket::listen(shared_config).await;
 
             sender_sender.send(async_socket.get_sender()).unwrap(); //TODO: handle result..
 
@@ -84,7 +80,7 @@ impl ServerSocket {
         let socket = ServerSocket {
             to_client_sender,
             from_client_receiver,
-            link_conditioner_config: None,
+            link_conditioner_config: server_socket_config.shared.link_condition_config.clone(),
         };
 
         socket

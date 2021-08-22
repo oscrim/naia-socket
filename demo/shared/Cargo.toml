@@ -1,0 +1,15 @@
+[package]
+name = "naia-socket-demo-shared"
+version = "0.1.0"
+authors = ["connorcarpenter <connorcarpenter@gmail.com>"]
+publish = false
+edition = "2018"
+license = "MIT OR Apache-2.0"
+
+[features]
+multithread = [ "naia-socket-shared/multithread" ]
+mquad = [ "naia-socket-shared/mquad" ]
+wbindgen = [ "naia-socket-shared/wbindgen" ]
+
+[dependencies]
+naia-socket-shared = { path = "../../shared" }

@@ -11,7 +11,10 @@ use futures_util::{pin_mut, select, FutureExt, StreamExt};
 
 use super::session::start_session_server;
 
-use crate::{async_server_socket::AsyncServerSocketTrait, error::NaiaServerSocketError, Packet};
+use crate::{
+    async_server_socket::AsyncServerSocketTrait, error::NaiaServerSocketError, Packet,
+    ServerSocketConfig,
+};
 
 const CLIENT_CHANNEL_SIZE: usize = 8;
 
@@ -26,14 +29,14 @@ pub struct ServerSocket {
 
 impl ServerSocket {
     /// Returns a new ServerSocket, listening at the given socket address
-    pub async fn listen(
-        session_listen_addr: SocketAddr,
-        webrtc_listen_addr: SocketAddr,
-        public_webrtc_addr: SocketAddr,
-    ) -> Self {
+    pub async fn listen(server_config: ServerSocketConfig) -> Self {
         let (to_client_sender, to_client_receiver) = mpsc::channel(CLIENT_CHANNEL_SIZE);
 
-        let rtc_server = RtcServer::new(webrtc_listen_addr, public_webrtc_addr).await;
+        let rtc_server = RtcServer::new(
+            server_config.webrtc_listen_addr,
+            server_config.public_webrtc_addr,
+        )
+        .await;
 
         let socket = ServerSocket {
             rtc_server,
@@ -41,7 +44,7 @@ impl ServerSocket {
             to_client_receiver,
         };
 
-        start_session_server(session_listen_addr, socket.rtc_server.session_endpoint());
+        start_session_server(server_config, socket.rtc_server.session_endpoint());
 
         socket
     }

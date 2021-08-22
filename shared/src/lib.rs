@@ -23,6 +23,7 @@ mod impls;
 mod link_conditioner_config;
 mod packet_reader;
 mod reference;
+mod shared_config;
 mod time_queue;
 
 pub use find_my_ip_address::find_my_ip_address;
@@ -30,4 +31,5 @@ pub use impls::{Instant, Random, Timer, Timestamp};
 pub use link_conditioner_config::LinkConditionerConfig;
 pub use packet_reader::PacketReader;
 pub use reference::Ref;
+pub use shared_config::SocketSharedConfig;
 pub use time_queue::TimeQueue;

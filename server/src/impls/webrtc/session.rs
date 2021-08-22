@@ -1,5 +1,5 @@
 use std::{
-    net::{SocketAddr, TcpListener, TcpStream},
+    net::{TcpListener, TcpStream},
     pin::Pin,
     task::{Context, Poll},
 };
@@ -18,26 +18,32 @@ use smol::{
 
 use log::info;
 
+use once_cell::sync::OnceCell;
 use webrtc_unreliable::SessionEndpoint;
 
-use crate::executor;
+use crate::{executor, ServerSocketConfig};
 
-pub fn start_session_server(socket_address: SocketAddr, session_endpoint: SessionEndpoint) {
+static RTC_URL_PATH: OnceCell<String> = OnceCell::new();
+
+pub fn start_session_server(server_config: ServerSocketConfig, session_endpoint: SessionEndpoint) {
+    RTC_URL_PATH
+        .set(format!("POST /{}", server_config.shared.rtc_endpoint_path))
+        .unwrap();
     executor::spawn(async move {
-        listen(
-            session_endpoint.clone(),
-            Async::<TcpListener>::bind(socket_address).unwrap(),
-        )
-        .await;
+        listen(server_config, session_endpoint.clone()).await;
     })
     .detach();
 }
 
 /// Listens for incoming connections and serves them.
-async fn listen(session_endpoint: SessionEndpoint, listener: Async<TcpListener>) {
+async fn listen(server_config: ServerSocketConfig, session_endpoint: SessionEndpoint) {
+    let socket_address = server_config.session_listen_addr;
+
+    let listener = Async::<TcpListener>::bind(socket_address).unwrap();
     info!(
-        "Session initiator listening on http://{}",
-        listener.get_ref().local_addr().unwrap()
+        "Session initiator available at POST http://{}/{}",
+        listener.get_ref().local_addr().unwrap(),
+        RTC_URL_PATH.get().unwrap()
     );
 
     loop {
@@ -65,7 +71,7 @@ async fn serve(mut session_endpoint: SessionEndpoint, mut stream: Arc<Async<TcpS
         {
             if let Some(line) = lines.next().await {
                 let line = line.unwrap();
-                if line.starts_with("POST /new_rtc_session") {
+                if line.starts_with(RTC_URL_PATH.get().unwrap()) {
                     while let Some(line) = lines.next().await {
                         let line = line.unwrap();
                         if line.len() == 0 {

@@ -7,7 +7,10 @@ use std::{
     net::{SocketAddr, UdpSocket},
 };
 
-use crate::{async_server_socket::AsyncServerSocketTrait, error::NaiaServerSocketError, Packet};
+use crate::{
+    async_server_socket::AsyncServerSocketTrait, error::NaiaServerSocketError, Packet,
+    ServerSocketConfig,
+};
 
 const CLIENT_CHANNEL_SIZE: usize = 8;
 
@@ -23,12 +26,8 @@ pub struct ServerSocket {
 
 impl ServerSocket {
     /// Returns a new ServerSocket, listening at the given socket address
-    pub async fn listen(
-        session_listen_addr: SocketAddr,
-        _webrtc_listen_addr: SocketAddr,
-        _public_webrtc_addr: SocketAddr,
-    ) -> Self {
-        let socket = Async::new(UdpSocket::bind(&session_listen_addr).unwrap()).unwrap();
+    pub async fn listen(config: ServerSocketConfig) -> Self {
+        let socket = Async::new(UdpSocket::bind(&config.session_listen_addr).unwrap()).unwrap();
 
         let (to_client_sender, to_client_receiver) = mpsc::channel(CLIENT_CHANNEL_SIZE);
 

@@ -18,9 +18,10 @@ extern crate log;
 #[macro_use]
 extern crate cfg_if;
 
-pub use naia_socket_shared::{LinkConditionerConfig, Timer};
+pub use naia_socket_shared::{LinkConditionerConfig, SocketSharedConfig, Timer};
 
 mod async_server_socket;
+mod config;
 mod error;
 mod impls;
 mod packet;
@@ -31,6 +32,7 @@ mod server_socket;
 /// Executor for Server
 pub mod executor;
 
+pub use config::ServerSocketConfig;
 pub use error::NaiaServerSocketError;
 pub use naia_socket_shared::find_my_ip_address;
 pub use packet::Packet;

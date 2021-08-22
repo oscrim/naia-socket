@@ -47,33 +47,31 @@ impl App {
     }
 
     pub fn update(&mut self) {
-        loop {
-            match self.client_socket.receive() {
-                Ok(event) => match event {
-                    Some(packet) => {
-                        let message = String::from_utf8_lossy(packet.payload());
-                        info!("Client recv: {}", message);
+        match self.client_socket.receive() {
+            Ok(event) => match event {
+                Some(packet) => {
+                    let message = String::from_utf8_lossy(packet.payload());
+                    info!("Client recv: {}", message);
 
-                        if message.eq(PONG_MSG) {
-                            self.message_count += 1;
-                        }
+                    if message.eq(PONG_MSG) {
+                        self.message_count += 1;
                     }
-                    None => {
-                        if self.timer.ringing() {
-                            self.timer.reset();
-                            if self.message_count < 10 {
-                                let to_server_message: String = PING_MSG.to_string();
-                                info!("Client send: {}", to_server_message,);
-                                self.message_sender
-                                    .send(Packet::new(to_server_message.into_bytes()))
-                                    .expect("send error");
-                            }
-                        }
-                    }
-                },
-                Err(err) => {
-                    info!("Client Error: {}", err);
                 }
+                None => {
+                    if self.timer.ringing() {
+                        self.timer.reset();
+                        if self.message_count < 10 {
+                            let to_server_message: String = PING_MSG.to_string();
+                            info!("Client send: {}", to_server_message,);
+                            self.message_sender
+                                .send(Packet::new(to_server_message.into_bytes()))
+                                .expect("send error");
+                        }
+                    }
+                }
+            },
+            Err(err) => {
+                info!("Client Error: {}", err);
             }
         }
     }
