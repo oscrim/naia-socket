@@ -17,11 +17,6 @@ pub fn process_packet<T: Eq>(
         info!("link conditioner: packet lost");
         return;
     }
-    if Random::gen_range_f32(0.0, 1.0) <= config.incoming_corruption {
-        //TODO: corrupt the packet
-        info!("link conditioner: packet corrupted");
-        return;
-    }
     let mut latency: u32 = config.incoming_latency;
     if config.incoming_jitter > 0 {
         if Random::gen_bool() {

@@ -22,7 +22,7 @@ cfg_if! {
     }
 }
 
-pub use naia_socket_shared::LinkConditionerConfig;
+pub use naia_socket_shared::{LinkConditionerConfig, Timer};
 
 mod client_socket;
 mod error;

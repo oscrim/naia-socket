@@ -18,7 +18,7 @@ extern crate log;
 #[macro_use]
 extern crate cfg_if;
 
-pub use naia_socket_shared::LinkConditionerConfig;
+pub use naia_socket_shared::{LinkConditionerConfig, Timer};
 
 mod async_server_socket;
 mod error;

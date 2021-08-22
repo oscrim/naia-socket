@@ -2,14 +2,14 @@
 extern crate log;
 
 use log::LevelFilter;
-use naia_server_socket::{Packet, ServerSocket, ServerSocketTrait};
 use simple_logger::SimpleLogger;
-use smol::io;
+
+use naia_server_socket::{Packet, ServerSocket, ServerSocketTrait};
 
 const PING_MSG: &str = "ping";
 const PONG_MSG: &str = "pong";
 
-fn main() -> io::Result<()> {
+fn main() {
     // IP Address to listen on for the signaling portion of WebRTC
     let session_listen_addr = "127.0.0.1:14191"
         .parse()
