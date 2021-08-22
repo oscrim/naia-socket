@@ -5,21 +5,21 @@ use naia_socket_shared::Ref;
 use std::error::Error;
 use web_sys::RtcDataChannel;
 
-/// Handles sending messages to the Server for a given Client Socket
+/// Handles receiving messages from the Server through a given Client Socket
 #[derive(Clone, Debug)]
-pub struct MessageSender {
+pub struct PacketReceiver {
     data_channel: RtcDataChannel,
     dropped_outgoing_messages: Ref<VecDeque<Packet>>,
 }
 
-impl MessageSender {
-    /// Create a new MessageSender, if supplied with the RtcDataChannel and a
+impl PacketReceiver {
+    /// Create a new PacketReceiver, if supplied with the RtcDataChannel and a
     /// reference to a list of dropped messages
     pub fn new(
         data_channel: RtcDataChannel,
         dropped_outgoing_messages: Ref<VecDeque<Packet>>,
-    ) -> MessageSender {
-        MessageSender {
+    ) -> Self {
+        PacketReceiver {
             data_channel,
             dropped_outgoing_messages,
         }

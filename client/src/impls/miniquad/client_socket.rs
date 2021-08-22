@@ -16,7 +16,7 @@ use naia_socket_shared::LinkConditionerConfig;
 #[derive(Debug)]
 pub struct ClientSocket {
     address: SocketAddr,
-    message_sender: MessageSender,
+    packet_sender: PacketSender,
 }
 
 impl ClientSocket {
@@ -33,7 +33,7 @@ impl ClientSocket {
 
         let mut client_socket: Box<dyn ClientSocketTrait> = Box::new(ClientSocket {
             address: client_config.server_address,
-            message_sender: MessageSender::new(),
+            packet_sender: PacketSender::new(),
         });
 
         if let Some(config) = &client_config.shared.link_condition_config {
@@ -65,8 +65,8 @@ impl ClientSocketTrait for ClientSocket {
         Ok(None)
     }
 
-    fn get_sender(&mut self) -> MessageSender {
-        return self.message_sender.clone();
+    fn get_sender(&mut self) -> Packet {
+        return self.packet_sender.clone();
     }
 
     fn with_link_conditioner(

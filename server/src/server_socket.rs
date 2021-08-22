@@ -22,10 +22,10 @@ use crate::{
 
 /// Defines the functionality of a Naia Server Socket
 pub trait ServerSocketTrait: Debug + Send + Sync {
-    /// Gets a MessageReceiver you can use to receive messages from the Server
+    /// Gets a PacketReceiver you can use to receive messages from the Server
     /// Socket
     fn get_receiver(&self) -> Box<dyn PacketReceiverTrait>;
-    /// Gets a MessageSender you can use to send messages through the Server
+    /// Gets a PacketSender you can use to send messages through the Server
     /// Socket
     fn get_sender(&self) -> PacketSender;
     /// Wraps the current socket in a LinkConditioner

@@ -9,14 +9,15 @@ cfg_if! {
 }
 
 use naia_client_socket::{
-    ClientSocket, ClientSocketConfig, ClientSocketTrait, MessageSender, Packet, Timer,
+    ClientSocket, ClientSocketConfig, ClientSocketTrait, Packet, PacketReceiverTrait, PacketSender,
+    Timer,
 };
 
 use naia_socket_demo_shared::{get_server_address, get_shared_config, PING_MSG, PONG_MSG};
 
 pub struct App {
-    client_socket: Box<dyn ClientSocketTrait>,
-    message_sender: MessageSender,
+    sender: PacketSender,
+    receiver: Box<dyn PacketReceiverTrait>,
     message_count: u8,
     timer: Timer,
 }
@@ -28,23 +29,20 @@ impl App {
         let client_socket_config =
             ClientSocketConfig::new(get_server_address(), get_shared_config());
 
-        let mut client_socket = ClientSocket::connect(client_socket_config);
-        let mut message_sender = client_socket.get_sender();
-
-        message_sender
-            .send(Packet::new(PING_MSG.to_string().into_bytes()))
-            .unwrap();
+        let client_socket = ClientSocket::connect(client_socket_config);
+        let packet_sender = client_socket.get_sender();
+        let packet_receiver = client_socket.get_receiver();
 
         App {
-            client_socket,
-            message_sender,
+            sender: packet_sender,
+            receiver: packet_receiver,
             message_count: 0,
             timer: Timer::new(Duration::from_secs(1)),
         }
     }
 
     pub fn update(&mut self) {
-        match self.client_socket.receive() {
+        match self.receiver.receive() {
             Ok(event) => match event {
                 Some(packet) => {
                     let message = String::from_utf8_lossy(packet.payload());
@@ -60,7 +58,7 @@ impl App {
                         if self.message_count < 10 {
                             let to_server_message: String = PING_MSG.to_string();
                             info!("Client send: {}", to_server_message,);
-                            self.message_sender
+                            self.sender
                                 .send(Packet::new(to_server_message.into_bytes()))
                                 .expect("send error");
                         }

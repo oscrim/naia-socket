@@ -18,7 +18,7 @@ use super::webrtc_internal::webrtc_initialize;
 pub struct ClientSocket {
     address: SocketAddr,
     message_queue: Ref<VecDeque<Result<Option<Packet>, NaiaClientSocketError>>>,
-    message_sender: MessageSender,
+    packet_sender: PacketSender,
     dropped_outgoing_messages: Ref<VecDeque<Packet>>,
 }
 
@@ -34,13 +34,13 @@ impl ClientSocket {
 
         let dropped_outgoing_messages = Ref::new(VecDeque::new());
 
-        let message_sender =
-            MessageSender::new(data_channel.clone(), dropped_outgoing_messages.clone());
+        let packet_sender =
+            PacketSender::new(data_channel.clone(), dropped_outgoing_messages.clone());
 
         let mut client_socket: Box<dyn ClientSocketTrait> = Box::new(ClientSocket {
             address: client_config.server_address,
             message_queue,
-            message_sender,
+            packet_sender,
             dropped_outgoing_messages,
         });
 
@@ -101,8 +101,8 @@ impl ClientSocketTrait for ClientSocket {
         }
     }
 
-    fn get_sender(&mut self) -> MessageSender {
-        return self.message_sender.clone();
+    fn get_sender(&mut self) -> PacketSender {
+        return self.packet_sender.clone();
     }
 
     fn with_link_conditioner(

@@ -6,16 +6,16 @@ use std::error::Error;
 
 /// Handles sending messages to the Server for a given Client Socket
 #[derive(Clone, Debug)]
-pub struct MessageSender {
+pub struct PacketSender {
     address: SocketAddr,
     socket: Ref<UdpSocket>,
 }
 
-impl MessageSender {
-    /// Create a new MessageSender, if supplied with the Server's address & a
+impl PacketSender {
+    /// Create a new PacketSender, if supplied with the Server's address & a
     /// reference back to the parent Socket
-    pub fn new(address: SocketAddr, socket: Ref<UdpSocket>) -> MessageSender {
-        MessageSender { address, socket }
+    pub fn new(address: SocketAddr, socket: Ref<UdpSocket>) -> Self {
+        PacketSender { address, socket }
     }
 
     /// Send a Packet to the Server
