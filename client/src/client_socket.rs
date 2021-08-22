@@ -1,8 +1,6 @@
 use std::fmt::Debug;
 
-use naia_socket_shared::LinkConditionerConfig;
-
-use crate::{PacketReceiverTrait, PacketSender};
+use crate::{PacketReceiver, PacketSender};
 
 cfg_if! {
     if #[cfg(feature = "multithread")] {
@@ -17,10 +15,8 @@ cfg_if! {
 pub trait ClientSocketTrait: ClientSocketBaseTrait {
     /// Gets a PacketReceiver you can use to receive messages from the Client
     /// Socket
-    fn get_receiver(&self) -> Box<dyn PacketReceiverTrait>;
+    fn get_receiver(&self) -> Box<dyn PacketReceiver>;
     /// Gets a PacketSender you can use to send messages through the Client
     /// Socket
     fn get_sender(&self) -> PacketSender;
-    /// Wraps the current socket in a LinkConditioner
-    fn with_link_conditioner(self, config: &LinkConditionerConfig) -> Self;
 }

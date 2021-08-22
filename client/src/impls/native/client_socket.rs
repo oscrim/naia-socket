@@ -5,8 +5,11 @@ use std::net::{SocketAddr, UdpSocket};
 use naia_socket_shared::{find_my_ip_address, LinkConditionerConfig, Ref};
 
 use crate::{
-    ClientSocketConfig, ClientSocketTrait, PacketReceiver, PacketReceiverTrait, PacketSender,
+    packet_receiver::ConditionedPacketReceiver, ClientSocketConfig, ClientSocketTrait,
+    PacketReceiver, PacketSender,
 };
+
+use super::packet_receiver::PacketReceiverImpl;
 
 /// A client-side socket which communicates with an underlying unordered &
 /// unreliable protocol
@@ -43,19 +46,16 @@ impl ClientSocket {
 }
 
 impl ClientSocketTrait for ClientSocket {
-    fn get_receiver(&self) -> Box<dyn PacketReceiverTrait> {
-        match &self.link_conditioner_config {
-            Some(_config) => Box::new(PacketReceiver::new(self.address, self.socket.clone())),
-            None => Box::new(PacketReceiver::new(self.address, self.socket.clone())),
+    fn get_receiver(&self) -> Box<dyn PacketReceiver> {
+        let inner_receiver = Box::new(PacketReceiverImpl::new(self.address, self.socket.clone()));
+        if let Some(config) = &self.link_conditioner_config {
+            return Box::new(ConditionedPacketReceiver::new(inner_receiver, config));
+        } else {
+            return inner_receiver;
         }
     }
 
     fn get_sender(&self) -> PacketSender {
         return self.packet_sender.clone();
-    }
-
-    fn with_link_conditioner(mut self, config: &LinkConditionerConfig) -> Self {
-        self.link_conditioner_config = Some(config.clone());
-        return self;
     }
 }

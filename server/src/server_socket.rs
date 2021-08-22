@@ -28,8 +28,6 @@ pub trait ServerSocketTrait: Debug + Send + Sync {
     /// Gets a PacketSender you can use to send messages through the Server
     /// Socket
     fn get_sender(&self) -> PacketSender;
-    /// Wraps the current socket in a LinkConditioner
-    fn with_link_conditioner(self, config: &LinkConditionerConfig) -> Self;
 }
 
 /// Server Socket is able to send and receive messages from remote Clients
@@ -100,10 +98,5 @@ impl ServerSocketTrait for ServerSocket {
 
     fn get_sender(&self) -> PacketSender {
         PacketSender::new(self.to_client_sender.clone())
-    }
-
-    fn with_link_conditioner(mut self, config: &LinkConditionerConfig) -> Self {
-        self.link_conditioner_config = Some(config.clone());
-        return self;
     }
 }

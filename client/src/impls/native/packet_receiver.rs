@@ -5,21 +5,21 @@ use std::{
 
 use naia_socket_shared::Ref;
 
-use crate::{NaiaClientSocketError, Packet, PacketReceiverTrait};
+use crate::{NaiaClientSocketError, Packet, PacketReceiver};
 
 /// Handles receiving messages from the Server through a given Client Socket
 #[derive(Clone, Debug)]
-pub struct PacketReceiver {
+pub struct PacketReceiverImpl {
     address: SocketAddr,
     socket: Ref<UdpSocket>,
     receive_buffer: Vec<u8>,
 }
 
-impl PacketReceiver {
+impl PacketReceiverImpl {
     /// Create a new PacketReceiver, if supplied with the Server's address & a
     /// reference back to the parent Socket
     pub fn new(address: SocketAddr, socket: Ref<UdpSocket>) -> Self {
-        PacketReceiver {
+        PacketReceiverImpl {
             address,
             socket,
             receive_buffer: vec![0; 1472],
@@ -27,7 +27,7 @@ impl PacketReceiver {
     }
 }
 
-impl PacketReceiverTrait for PacketReceiver {
+impl PacketReceiver for PacketReceiverImpl {
     fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
         let buffer: &mut [u8] = self.receive_buffer.as_mut();
         match self

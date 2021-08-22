@@ -9,7 +9,7 @@ cfg_if! {
 }
 
 use naia_client_socket::{
-    ClientSocket, ClientSocketConfig, ClientSocketTrait, Packet, PacketReceiverTrait, PacketSender,
+    ClientSocket, ClientSocketConfig, ClientSocketTrait, Packet, PacketReceiver, PacketSender,
     Timer,
 };
 
@@ -17,7 +17,7 @@ use naia_socket_demo_shared::{get_server_address, get_shared_config, PING_MSG, P
 
 pub struct App {
     sender: PacketSender,
-    receiver: Box<dyn PacketReceiverTrait>,
+    receiver: Box<dyn PacketReceiver>,
     message_count: u8,
     timer: Timer,
 }

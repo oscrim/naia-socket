@@ -31,11 +31,11 @@ mod config;
 mod error;
 mod impls;
 mod packet;
-mod packet_receiver_trait;
+mod packet_receiver;
 
 pub use client_socket::ClientSocketTrait;
 pub use config::ClientSocketConfig;
 pub use error::NaiaClientSocketError;
-pub use impls::{ClientSocket, PacketReceiver, PacketSender};
+pub use impls::{ClientSocket, PacketSender};
 pub use packet::Packet;
-pub use packet_receiver_trait::PacketReceiverTrait;
+pub use packet_receiver::PacketReceiver;

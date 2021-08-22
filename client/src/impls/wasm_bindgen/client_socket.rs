@@ -5,11 +5,11 @@ use std::{collections::VecDeque, net::SocketAddr};
 use naia_socket_shared::{LinkConditionerConfig, Ref};
 
 use crate::{
-    ClientSocketConfig, ClientSocketTrait, Packet, PacketReceiver, PacketReceiverTrait,
-    PacketSender,
+    packet_receiver::ConditionedPacketReceiver, ClientSocketConfig, ClientSocketTrait, Packet,
+    PacketReceiver, PacketSender,
 };
 
-use super::webrtc_internal::webrtc_initialize;
+use super::{packet_receiver::PacketReceiverImpl, webrtc_internal::webrtc_initialize};
 
 /// A client-side socket which communicates with an underlying unordered &
 /// unreliable protocol
@@ -18,7 +18,7 @@ pub struct ClientSocket {
     address: SocketAddr,
     message_queue: Ref<VecDeque<Packet>>,
     packet_sender: PacketSender,
-    packet_receiver: PacketReceiver,
+    packet_receiver: PacketReceiverImpl,
     dropped_outgoing_messages: Ref<VecDeque<Packet>>,
     link_conditioner_config: Option<LinkConditionerConfig>,
 }
@@ -37,7 +37,7 @@ impl ClientSocket {
 
         let packet_sender =
             PacketSender::new(data_channel.clone(), dropped_outgoing_messages.clone());
-        let packet_receiver = PacketReceiver::new(
+        let packet_receiver = PacketReceiverImpl::new(
             data_channel.clone(),
             dropped_outgoing_messages.clone(),
             message_queue.clone(),
@@ -64,19 +64,16 @@ unsafe impl Send for ClientSocket {}
 unsafe impl Sync for ClientSocket {}
 
 impl ClientSocketTrait for ClientSocket {
-    fn get_receiver(&self) -> Box<dyn PacketReceiverTrait> {
-        match &self.link_conditioner_config {
-            Some(_config) => Box::new(self.packet_receiver.clone()),
-            None => Box::new(self.packet_receiver.clone()),
+    fn get_receiver(&self) -> Box<dyn PacketReceiver> {
+        let inner_receiver = Box::new(self.packet_receiver.clone());
+        if let Some(config) = &self.link_conditioner_config {
+            return Box::new(ConditionedPacketReceiver::new(inner_receiver, config));
+        } else {
+            return inner_receiver;
         }
     }
 
     fn get_sender(&self) -> PacketSender {
         return self.packet_sender.clone();
-    }
-
-    fn with_link_conditioner(mut self, config: &LinkConditionerConfig) -> Self {
-        self.link_conditioner_config = Some(config.clone());
-        return self;
     }
 }
