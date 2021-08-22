@@ -7,11 +7,7 @@ use std::{
     net::{SocketAddr, UdpSocket},
 };
 
-use naia_socket_shared::LinkConditionerConfig;
-
-use crate::{error::NaiaServerSocketError, AsyncServerSocketTrait, Packet};
-
-use crate::{link_conditioner::LinkConditioner, message_sender::MessageSender};
+use crate::{async_server_socket::AsyncServerSocketTrait, error::NaiaServerSocketError, Packet};
 
 const CLIENT_CHANNEL_SIZE: usize = 8;
 
@@ -103,7 +99,7 @@ impl AsyncServerSocketTrait for ServerSocket {
         }
     }
 
-    fn get_sender(&self) -> MessageSender {
+    fn get_sender(&self) -> mpsc::Sender<Packet> {
         return self.to_client_sender.clone();
     }
 }

@@ -29,7 +29,7 @@ fn backoff_enabled(round: i32) -> bool {
 
 impl App {
     pub fn new() -> App {
-        info!("Naia Client Socket Demo Started");
+        info!("Naia Client Socket Demo started");
 
         // Put your Server's IP Address here!, can't easily find this automatically from the browser
         // Note: a 127.0.0.1 IP address will not function correctly on Firefox

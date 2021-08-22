@@ -2,7 +2,7 @@
 extern crate log;
 
 use log::LevelFilter;
-use naia_server_socket::{LinkConditionerConfig, Packet, ServerSocket, ServerSocketTrait};
+use naia_server_socket::{Packet, ServerSocket, ServerSocketTrait};
 use simple_logger::SimpleLogger;
 use smol::io;
 
@@ -31,14 +31,14 @@ fn main() -> io::Result<()> {
             .init()
             .expect("A logger was already initialized");
 
-        info!("Naia Server Socket Demo Started");
+        info!("Naia Server Socket Demo started");
 
         let server_socket =
-            ServerSocket::listen(session_listen_addr, webrtc_listen_addr, public_webrtc_addr)
-                .with_link_conditioner(&LinkConditionerConfig::good_condition());
+            ServerSocket::listen(session_listen_addr, webrtc_listen_addr, public_webrtc_addr);
+        //.with_link_conditioner(&LinkConditionerConfig::good_condition());
 
         let sender = server_socket.get_sender();
-        let receiver = server_socket.get_receiver();
+        let mut receiver = server_socket.get_receiver();
 
         loop {
             match receiver.receive() {

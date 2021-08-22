@@ -10,7 +10,9 @@ use futures_util::SinkExt;
 use naia_socket_shared::LinkConditionerConfig;
 
 use super::{
-    async_server_socket::AsyncServerSocketTrait, packet::Packet, packet_receiver::PacketReceiver,
+    async_server_socket::AsyncServerSocketTrait,
+    packet::Packet,
+    packet_receiver::{ConditionedPacketReceiver, PacketReceiver, PacketReceiverTrait},
     packet_sender::PacketSender,
 };
 use crate::{error::NaiaServerSocketError, impls::ServerSocket as AsyncServerSocket};
@@ -19,7 +21,7 @@ use crate::{error::NaiaServerSocketError, impls::ServerSocket as AsyncServerSock
 pub trait ServerSocketTrait: Debug + Send + Sync {
     /// Gets a MessageReceiver you can use to receive messages from the Server
     /// Socket
-    fn get_receiver(&self) -> PacketReceiver;
+    fn get_receiver(&self) -> Box<dyn PacketReceiverTrait>;
     /// Gets a MessageSender you can use to send messages through the Server
     /// Socket
     fn get_sender(&self) -> PacketSender;
@@ -90,8 +92,14 @@ impl ServerSocket {
 }
 
 impl ServerSocketTrait for ServerSocket {
-    fn get_receiver(&self) -> PacketReceiver {
-        PacketReceiver::new(self.from_client_receiver.clone())
+    fn get_receiver(&self) -> Box<dyn PacketReceiverTrait> {
+        match &self.link_conditioner_config {
+            Some(config) => Box::new(ConditionedPacketReceiver::new(
+                self.from_client_receiver.clone(),
+                config,
+            )),
+            None => Box::new(PacketReceiver::new(self.from_client_receiver.clone())),
+        }
     }
 
     fn get_sender(&self) -> PacketSender {

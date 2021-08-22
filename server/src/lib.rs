@@ -31,7 +31,7 @@ mod server_socket;
 pub use error::NaiaServerSocketError;
 pub use naia_socket_shared::find_my_ip_address;
 pub use packet::Packet;
-pub use packet_receiver::PacketReceiver;
+pub use packet_receiver::{PacketReceiver, PacketReceiverTrait};
 pub use packet_sender::PacketSender;
 pub use server_socket::{ServerSocket, ServerSocketTrait};
 
