@@ -1,6 +1,12 @@
 use std::net::SocketAddr;
 
-use miniquad::info;
+cfg_if! {
+    if #[cfg(feature = "mquad")] {
+        use miniquad::info;
+    } else {
+        use log::info;
+    }
+}
 
 use naia_client_socket::{
     ClientSocket, ClientSocketTrait, LinkConditionerConfig, MessageSender, Packet,
@@ -23,7 +29,7 @@ fn backoff_enabled(round: i32) -> bool {
 
 impl App {
     pub fn new() -> App {
-        info!("Naia Client Socket Example Started");
+        info!("Naia Client Socket Demo Started");
 
         // Put your Server's IP Address here!, can't easily find this automatically from the browser
         // Note: a 127.0.0.1 IP address will not function correctly on Firefox

@@ -3,7 +3,7 @@ xdg-open http://localhost:3114/ # This will open a browser on Linux
 open http://localhost:3114/ # This will open a browser on macOS
 
 # replace 'client' & 'webserver' below with the appropriate directory names for your project
-client='naia-client-socket-miniquad-example'
+client='naia-client-socket-miniquad-demo'
 webserver_dir='dev_http_server'
 
 get_reload_actions(){

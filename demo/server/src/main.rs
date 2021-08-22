@@ -27,7 +27,7 @@ fn main() -> io::Result<()> {
     smol::block_on(async {
         simple_logger::init_with_level(log::Level::Info).expect("A logger was already initialized");
 
-        info!("Naia Server Socket Example Started");
+        info!("Naia Server Socket Demo Started");
 
         let mut server_socket =
             ServerSocket::listen(session_listen_addr, webrtc_listen_addr, public_webrtc_addr)
