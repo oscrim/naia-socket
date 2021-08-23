@@ -1,8 +1,8 @@
 extern crate log;
 
-use std::net::{SocketAddr, UdpSocket};
+use std::net::UdpSocket;
 
-use naia_socket_shared::{find_my_ip_address, LinkConditionerConfig, Ref};
+use naia_socket_shared::{find_my_ip_address, Ref};
 
 use crate::{
     packet_receiver::ConditionedPacketReceiver, ClientSocketConfig, PacketReceiver, PacketSender,
@@ -13,12 +13,7 @@ use super::packet_receiver::PacketReceiverImpl;
 /// A client-side socket which communicates with an underlying unordered &
 /// unreliable protocol
 #[derive(Debug)]
-pub struct ClientSocket {
-    address: SocketAddr,
-    socket: Ref<UdpSocket>,
-    packet_sender: PacketSender,
-    link_conditioner_config: Option<LinkConditionerConfig>,
-}
+pub struct ClientSocket;
 
 impl ClientSocket {
     /// Returns a new ClientSocket, connected to the given socket address

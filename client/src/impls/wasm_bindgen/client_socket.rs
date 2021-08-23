@@ -1,12 +1,11 @@
 extern crate log;
 
-use std::{collections::VecDeque, net::SocketAddr};
+use std::collections::VecDeque;
 
-use naia_socket_shared::{LinkConditionerConfig, Ref};
+use naia_socket_shared::Ref;
 
 use crate::{
-    packet_receiver::ConditionedPacketReceiver, ClientSocketConfig, Packet, PacketReceiver,
-    PacketSender,
+    packet_receiver::ConditionedPacketReceiver, ClientSocketConfig, PacketReceiver, PacketSender,
 };
 
 use super::{packet_receiver::PacketReceiverImpl, webrtc_internal::webrtc_initialize};
@@ -14,14 +13,7 @@ use super::{packet_receiver::PacketReceiverImpl, webrtc_internal::webrtc_initial
 /// A client-side socket which communicates with an underlying unordered &
 /// unreliable protocol
 #[derive(Debug)]
-pub struct ClientSocket {
-    address: SocketAddr,
-    message_queue: Ref<VecDeque<Packet>>,
-    packet_sender: PacketSender,
-    packet_receiver: PacketReceiverImpl,
-    dropped_outgoing_messages: Ref<VecDeque<Packet>>,
-    link_conditioner_config: Option<LinkConditionerConfig>,
-}
+pub struct ClientSocket;
 
 impl ClientSocket {
     /// Returns a new ClientSocket, connected to the given socket address

@@ -1,32 +1,19 @@
 use std::fmt::Debug;
 
-use crossbeam::{
-    channel,
-    channel::{Receiver, Sender},
-};
+use crossbeam::channel;
 
 use futures_util::SinkExt;
 
-use naia_socket_shared::LinkConditionerConfig;
-
 use super::{
     async_server_socket::AsyncServerSocketTrait,
-    packet::Packet,
     packet_receiver::{ConditionedPacketReceiverImpl, PacketReceiver, PacketReceiverImpl},
     packet_sender::PacketSender,
 };
-use crate::{
-    error::NaiaServerSocketError, executor, impls::ServerSocket as AsyncServerSocket,
-    ServerSocketConfig,
-};
+use crate::{executor, impls::ServerSocket as AsyncServerSocket, ServerSocketConfig};
 
 /// Server Socket is able to send and receive messages from remote Clients
 #[derive(Debug)]
-pub struct ServerSocket {
-    to_client_sender: Sender<Packet>,
-    from_client_receiver: Receiver<Result<Packet, NaiaServerSocketError>>,
-    link_conditioner_config: Option<LinkConditionerConfig>,
-}
+pub struct ServerSocket;
 
 impl ServerSocket {
     /// Returns a new ServerSocket, listening at the given socket addresses

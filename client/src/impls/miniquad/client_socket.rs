@@ -1,6 +1,4 @@
-use std::{collections::VecDeque, net::SocketAddr};
-
-use naia_socket_shared::LinkConditionerConfig;
+use std::collections::VecDeque;
 
 use crate::{
     packet_receiver::ConditionedPacketReceiver, ClientSocketConfig, PacketReceiver, PacketSender,
@@ -14,11 +12,7 @@ use super::{
 /// A client-side socket which communicates with an underlying unordered &
 /// unreliable protocol
 #[derive(Debug)]
-pub struct ClientSocket {
-    address: SocketAddr,
-    packet_sender: PacketSender,
-    link_conditioner_config: Option<LinkConditionerConfig>,
-}
+pub struct ClientSocket;
 
 impl ClientSocket {
     /// Returns a new ClientSocket, connected to the given socket address
