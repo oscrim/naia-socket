@@ -1,4 +1,4 @@
-use std::net::SocketAddr;
+use std::{default::Default, net::SocketAddr};
 
 use naia_socket_shared::SocketSharedConfig;
 
@@ -18,5 +18,16 @@ impl ClientSocketConfig {
             server_address,
             shared: shared_config,
         }
+    }
+}
+
+impl Default for ClientSocketConfig {
+    fn default() -> Self {
+        ClientSocketConfig::new(
+            "127.0.0.1:14191"
+                .parse()
+                .expect("could not parse HTTP address/port"),
+            SocketSharedConfig::default(),
+        )
     }
 }

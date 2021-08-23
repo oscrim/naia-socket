@@ -56,8 +56,7 @@ impl App {
                             let to_server_message: String = PING_MSG.to_string();
                             info!("Client send: {}", to_server_message,);
                             self.sender
-                                .send(Packet::new(to_server_message.into_bytes()))
-                                .expect("send error");
+                                .send(Packet::new(to_server_message.into_bytes()));
                         }
                     }
                 }

@@ -1,4 +1,4 @@
-use std::net::SocketAddr;
+use std::{default::Default, net::SocketAddr};
 
 use naia_socket_shared::SocketSharedConfig;
 
@@ -29,5 +29,22 @@ impl ServerSocketConfig {
             public_webrtc_addr,
             shared,
         }
+    }
+}
+
+impl Default for ServerSocketConfig {
+    fn default() -> Self {
+        ServerSocketConfig::new(
+            "127.0.0.1:14191"
+                .parse()
+                .expect("could not parse HTTP address/port"),
+            "127.0.0.1:14192"
+                .parse()
+                .expect("could not parse WebRTC data address/port"),
+            "127.0.0.1:14192"
+                .parse()
+                .expect("could not parse advertised public WebRTC data address/port"),
+            SocketSharedConfig::default(),
+        )
     }
 }
