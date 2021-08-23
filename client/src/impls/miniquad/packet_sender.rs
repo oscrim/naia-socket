@@ -1,5 +1,3 @@
-use std::error::Error;
-
 use super::shared::{naia_create_u8_array, naia_send};
 use crate::Packet;
 
@@ -15,7 +13,7 @@ impl PacketSender {
     }
 
     /// Send a Packet to the Server
-    pub fn send(&mut self, packet: Packet) -> Result<(), Box<dyn Error + Send + Sync>> {
+    pub fn send(&mut self, packet: Packet) {
         unsafe {
             let payload: &[u8] = packet.payload();
             let ptr = payload.as_ptr();
@@ -23,7 +21,5 @@ impl PacketSender {
             let js_obj = naia_create_u8_array(ptr as _, len as _);
             naia_send(js_obj);
         }
-
-        Ok(())
     }
 }

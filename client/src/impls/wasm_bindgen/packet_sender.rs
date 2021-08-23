@@ -29,7 +29,7 @@ impl PacketSender {
     }
 
     /// Send a Packet to the Server
-    pub fn send(&mut self, packet: Packet) -> Result<(), Box<dyn Error + Send + Sync>> {
+    pub fn send(&mut self, packet: Packet) {
         self.resend_dropped_messages();
 
         if let Err(_) = self.data_channel.send_with_u8_array(&packet.payload()) {
@@ -37,7 +37,6 @@ impl PacketSender {
                 .borrow_mut()
                 .push_back(packet);
         }
-        Ok(())
     }
 
     fn resend_dropped_messages(&mut self) {

@@ -2,7 +2,6 @@ use std::net::{SocketAddr, UdpSocket};
 
 use crate::Packet;
 use naia_socket_shared::Ref;
-use std::error::Error;
 
 /// Handles sending messages to the Server for a given Client Socket
 #[derive(Clone, Debug)]
@@ -19,16 +18,14 @@ impl PacketSender {
     }
 
     /// Send a Packet to the Server
-    pub fn send(&mut self, packet: Packet) -> Result<(), Box<dyn Error + Send + Sync>> {
+    pub fn send(&mut self, packet: Packet) {
         //send it
-        if let Err(err) = self
+        if let Err(_) = self
             .socket
             .borrow()
             .send_to(&packet.payload(), self.address)
         {
-            return Err(Box::new(err));
-        } else {
-            return Ok(());
+            //TODO: handle this error
         }
     }
 }
