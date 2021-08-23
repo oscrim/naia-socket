@@ -1,6 +1,4 @@
-use std::future::Future;
-use std::panic::catch_unwind;
-use std::thread;
+use std::{future::Future, panic::catch_unwind, thread};
 
 use once_cell::sync::Lazy;
 use smol::{block_on, future, Executor, Task};

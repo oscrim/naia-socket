@@ -13,6 +13,7 @@ impl PacketSender {
     pub fn new(channel_sender: Sender<Packet>) -> Self {
         PacketSender { channel_sender }
     }
+
     /// Sends a packet to the Server Socket
     pub fn send(&self, packet: Packet) {
         self.channel_sender.send(packet).unwrap(); //TODO: handle result..
