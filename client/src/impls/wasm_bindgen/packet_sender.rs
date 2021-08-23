@@ -1,6 +1,4 @@
-use std::{collections::VecDeque, error::Error};
-
-use log::info;
+use std::collections::VecDeque;
 
 use web_sys::RtcDataChannel;
 
@@ -47,9 +45,7 @@ impl PacketSender {
                 Some(dropped_packets)
             } {
                 for dropped_packet in dropped_packets {
-                    self.send(dropped_packet).unwrap_or_else(|err| {
-                        info!("Can't send dropped packet. Original Error: {:?}", err)
-                    });
+                    self.send(dropped_packet);
                 }
             }
         }
