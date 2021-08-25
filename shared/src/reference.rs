@@ -83,6 +83,8 @@ cfg_if! {
             rc::Rc,
         };
 
+        use send_wrapper::SendWrapper;
+
         #[derive(Debug)]
         pub struct Guard<'a, T: ?Sized> {
             inner: StdRef<'a, T>,
@@ -119,14 +121,14 @@ cfg_if! {
         /// environments
         #[derive(Debug)]
         pub struct Ref<T: ?Sized> {
-            inner: Rc<RefCell<T>>,
+            inner: SendWrapper<Rc<RefCell<T>>>,
         }
 
         impl<T> Ref<T> {
             /// Creates a new 'Ref' containing 'value'
             pub fn new(value: T) -> Self {
                 Ref {
-                    inner: Rc::new(RefCell::new(value)),
+                    inner: SendWrapper::new(Rc::new(RefCell::new(value))),
                 }
             }
         }
@@ -135,26 +137,26 @@ cfg_if! {
             /// Immutably borrows the wrapped value
             pub fn borrow(&self) -> Guard<T> {
                 Guard {
-                    inner: self.inner.borrow(),
+                    inner: self.inner.deref().borrow(),
                 }
             }
 
             /// Mutably borrows the wrapped value
             pub fn borrow_mut(&self) -> GuardMut<T> {
                 GuardMut {
-                    inner: self.inner.borrow_mut(),
+                    inner: self.inner.deref().borrow_mut(),
                 }
             }
 
             /// Returns a ref to the inner smart pointer
-            pub fn inner(&self) -> Rc<RefCell<T>> {
-                return self.inner.clone();
+            pub fn inner(self) -> Rc<RefCell<T>> {
+                return self.inner.take().clone();
             }
 
             /// Creates a new 'Ref' containing raw smart pointer 'inner'
-            pub fn new_raw(inner: Rc<RefCell<T>>) -> Self {
+            pub fn new_raw(rc: Rc<RefCell<T>>) -> Self {
                 Ref {
-                    inner,
+                    inner: SendWrapper::new(rc),
                 }
             }
         }
