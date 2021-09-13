@@ -4,9 +4,9 @@ use std::net::{SocketAddr, UdpSocket};
 
 use naia_socket_shared::{find_my_ip_address, Ref, SocketConfig};
 
-use crate::{packet_receiver::ConditionedPacketReceiver, PacketReceiver, PacketSender};
+use crate::packet_receiver::{ConditionedPacketReceiver, PacketReceiver, PacketReceiverTrait};
 
-use super::packet_receiver::PacketReceiverImpl;
+use super::{packet_receiver::PacketReceiverImpl, packet_sender::PacketSender};
 
 /// A client-side socket which communicates with an underlying unordered &
 /// unreliable protocol
@@ -22,7 +22,7 @@ impl Socket {
     }
 
     /// Connects to the given server address
-    pub fn connect(&self, server_address: SocketAddr) -> (PacketSender, Box<dyn PacketReceiver>) {
+    pub fn connect(&self, server_address: SocketAddr) -> (PacketSender, PacketReceiver) {
         let client_ip_address = find_my_ip_address().expect("cannot find current ip address");
 
         let socket = Ref::new(UdpSocket::bind((client_ip_address, 0)).unwrap());
@@ -36,7 +36,7 @@ impl Socket {
         let conditioner_config = self.config.link_condition_config.clone();
 
         let sender = packet_sender.clone();
-        let receiver: Box<dyn PacketReceiver> = {
+        let receiver: Box<dyn PacketReceiverTrait> = {
             let inner_receiver = Box::new(PacketReceiverImpl::new(server_address, socket.clone()));
             if let Some(config) = &conditioner_config {
                 Box::new(ConditionedPacketReceiver::new(inner_receiver, config))
@@ -45,6 +45,6 @@ impl Socket {
             }
         };
 
-        (sender, receiver)
+        (sender, PacketReceiver::new(receiver))
     }
 }

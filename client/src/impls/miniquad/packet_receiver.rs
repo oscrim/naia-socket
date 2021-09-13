@@ -1,6 +1,6 @@
-use super::shared::{naia_resend_dropped_messages, ERROR_QUEUE, MESSAGE_QUEUE};
+use crate::{error::NaiaClientSocketError, packet::Packet, packet_receiver::PacketReceiverTrait};
 
-use crate::{error::NaiaClientSocketError, Packet, PacketReceiver};
+use super::shared::{naia_resend_dropped_messages, ERROR_QUEUE, MESSAGE_QUEUE};
 
 /// Handles receiving messages from the Server through a given Client Socket
 #[derive(Clone, Debug)]
@@ -14,7 +14,7 @@ impl PacketReceiverImpl {
     }
 }
 
-impl PacketReceiver for PacketReceiverImpl {
+impl PacketReceiverTrait for PacketReceiverImpl {
     fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
         unsafe {
             naia_resend_dropped_messages();

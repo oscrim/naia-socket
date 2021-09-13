@@ -5,7 +5,7 @@ use std::{
 
 use naia_socket_shared::Ref;
 
-use crate::{NaiaClientSocketError, Packet, PacketReceiver};
+use crate::{error::NaiaClientSocketError, packet::Packet, packet_receiver::PacketReceiverTrait};
 
 /// Handles receiving messages from the Server through a given Client Socket
 #[derive(Clone, Debug)]
@@ -27,7 +27,7 @@ impl PacketReceiverImpl {
     }
 }
 
-impl PacketReceiver for PacketReceiverImpl {
+impl PacketReceiverTrait for PacketReceiverImpl {
     fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
         let buffer: &mut [u8] = self.receive_buffer.as_mut();
         match self

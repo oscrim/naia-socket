@@ -5,7 +5,25 @@ use naia_socket_shared::{link_condition_logic, LinkConditionerConfig, TimeQueue}
 use super::{error::NaiaClientSocketError, packet::Packet};
 
 /// Used to receive packets from the Client Socket
-pub trait PacketReceiver: Debug {
+#[derive(Debug)]
+pub struct PacketReceiver {
+    inner: Box<dyn PacketReceiverTrait>,
+}
+
+impl PacketReceiver {
+    /// Create a new PacketReceiver
+    pub fn new(inner: Box<dyn PacketReceiverTrait>) -> Self {
+        PacketReceiver { inner }
+    }
+
+    /// Receives a packet from the Client Socket
+    pub fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
+        return self.inner.receive();
+    }
+}
+
+/// Used to receive packets from the Client Socket
+pub trait PacketReceiverTrait: Debug {
     /// Receives a packet from the Client Socket
     fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError>;
 }
@@ -13,7 +31,7 @@ pub trait PacketReceiver: Debug {
 /// Used to receive packets from the Client Socket
 #[derive(Debug)]
 pub struct ConditionedPacketReceiver {
-    inner_receiver: Box<dyn PacketReceiver>,
+    inner_receiver: Box<dyn PacketReceiverTrait>,
     link_conditioner_config: LinkConditionerConfig,
     time_queue: TimeQueue<Packet>,
 }
@@ -21,7 +39,7 @@ pub struct ConditionedPacketReceiver {
 impl ConditionedPacketReceiver {
     /// Creates a new ConditionedPacketReceiver
     pub fn new(
-        inner_receiver: Box<dyn PacketReceiver>,
+        inner_receiver: Box<dyn PacketReceiverTrait>,
         link_conditioner_config: &LinkConditionerConfig,
     ) -> Self {
         ConditionedPacketReceiver {
@@ -48,7 +66,7 @@ impl ConditionedPacketReceiver {
     }
 }
 
-impl PacketReceiver for ConditionedPacketReceiver {
+impl PacketReceiverTrait for ConditionedPacketReceiver {
     fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
         loop {
             match self.inner_receiver.receive() {

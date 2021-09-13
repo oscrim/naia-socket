@@ -14,7 +14,7 @@ use naia_socket_demo_shared::{get_server_address, get_shared_config, PING_MSG, P
 
 pub struct App {
     sender: PacketSender,
-    receiver: Box<dyn PacketReceiver>,
+    receiver: PacketReceiver,
     message_count: u8,
     timer: Timer,
 }

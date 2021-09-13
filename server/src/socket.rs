@@ -10,7 +10,9 @@ use crate::{executor, impls::Socket as AsyncSocket};
 
 use super::{
     async_socket::AsyncSocketTrait,
-    packet_receiver::{ConditionedPacketReceiverImpl, PacketReceiver, PacketReceiverImpl},
+    packet_receiver::{
+        ConditionedPacketReceiverImpl, PacketReceiver, PacketReceiverImpl, PacketReceiverTrait,
+    },
     packet_sender::PacketSender,
     server_addrs::ServerAddrs,
 };
@@ -28,7 +30,7 @@ impl Socket {
     }
 
     /// Listens on the Socket for incoming communication from Clients
-    pub fn listen(&self, server_addrs: ServerAddrs) -> (PacketSender, Box<dyn PacketReceiver>) {
+    pub fn listen(&self, server_addrs: ServerAddrs) -> (PacketSender, PacketReceiver) {
         // Set up receiver loop
         let (from_client_sender, from_client_receiver) = channel::unbounded();
         let (sender_sender, sender_receiver) = channel::bounded(1);
@@ -68,7 +70,7 @@ impl Socket {
 
         let conditioner_config = self.config.link_condition_config.clone();
 
-        let receiver: Box<dyn PacketReceiver> = match &conditioner_config {
+        let receiver: Box<dyn PacketReceiverTrait> = match &conditioner_config {
             Some(config) => Box::new(ConditionedPacketReceiverImpl::new(
                 from_client_receiver.clone(),
                 config,
@@ -77,6 +79,6 @@ impl Socket {
         };
         let sender = PacketSender::new(to_client_sender.clone());
 
-        (sender, receiver)
+        (sender, PacketReceiver::new(receiver))
     }
 }

@@ -7,7 +7,25 @@ use naia_socket_shared::{link_condition_logic, LinkConditionerConfig, TimeQueue}
 use super::{error::NaiaServerSocketError, packet::Packet};
 
 /// Used to receive packets from the Server Socket
-pub trait PacketReceiver: Debug {
+#[derive(Debug)]
+pub struct PacketReceiver {
+    inner: Box<dyn PacketReceiverTrait>,
+}
+
+impl PacketReceiver {
+    /// Create a new PacketReceiver
+    pub fn new(inner: Box<dyn PacketReceiverTrait>) -> Self {
+        PacketReceiver { inner }
+    }
+
+    /// Receives a packet from the Server Socket
+    pub fn receive(&mut self) -> Result<Option<Packet>, NaiaServerSocketError> {
+        return self.inner.receive();
+    }
+}
+
+/// Used to receive packets from the Server Socket
+pub trait PacketReceiverTrait: Debug {
     /// Receives a packet from the Server Socket
     fn receive(&mut self) -> Result<Option<Packet>, NaiaServerSocketError>;
 }
@@ -25,7 +43,7 @@ impl PacketReceiverImpl {
     }
 }
 
-impl PacketReceiver for PacketReceiverImpl {
+impl PacketReceiverTrait for PacketReceiverImpl {
     fn receive(&mut self) -> Result<Option<Packet>, NaiaServerSocketError> {
         match self.channel_receiver.try_recv() {
             Ok(result) => match result {
@@ -77,7 +95,7 @@ impl ConditionedPacketReceiverImpl {
     }
 }
 
-impl PacketReceiver for ConditionedPacketReceiverImpl {
+impl PacketReceiverTrait for ConditionedPacketReceiverImpl {
     fn receive(&mut self) -> Result<Option<Packet>, NaiaServerSocketError> {
         loop {
             match self.channel_receiver.try_recv() {

@@ -4,7 +4,7 @@ use web_sys::RtcDataChannel;
 
 use naia_socket_shared::Ref;
 
-use crate::{NaiaClientSocketError, Packet, PacketReceiver};
+use crate::{error::NaiaClientSocketError, packet::Packet, packet_receiver::PacketReceiverTrait};
 
 /// Handles receiving messages from the Server through a given Client Socket
 #[derive(Clone, Debug)]
@@ -30,7 +30,7 @@ impl PacketReceiverImpl {
     }
 }
 
-impl PacketReceiver for PacketReceiverImpl {
+impl PacketReceiverTrait for PacketReceiverImpl {
     fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
         match self.message_queue.borrow_mut().pop_front() {
             Some(packet) => {
