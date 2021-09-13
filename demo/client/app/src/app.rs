@@ -8,9 +8,7 @@ cfg_if! {
     }
 }
 
-use naia_client_socket::{
-    ClientSocket, ClientSocketConfig, Packet, PacketReceiver, PacketSender, Timer,
-};
+use naia_client_socket::{Packet, PacketReceiver, PacketSender, Socket, Timer};
 
 use naia_socket_demo_shared::{get_server_address, get_shared_config, PING_MSG, PONG_MSG};
 
@@ -25,10 +23,8 @@ impl App {
     pub fn new() -> App {
         info!("Naia Client Socket Demo started");
 
-        let client_socket_config =
-            ClientSocketConfig::new(get_server_address(), get_shared_config());
-
-        let (sender, receiver) = ClientSocket::connect(client_socket_config);
+        let client_socket = Socket::new(get_shared_config());
+        let (sender, receiver) = client_socket.connect(get_server_address());
 
         App {
             sender,

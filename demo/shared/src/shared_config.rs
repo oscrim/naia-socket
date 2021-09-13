@@ -1,6 +1,6 @@
-use naia_socket_shared::{LinkConditionerConfig, SocketSharedConfig};
+use naia_socket_shared::{LinkConditionerConfig, SocketConfig};
 
-pub fn get_shared_config() -> SocketSharedConfig {
+pub fn get_shared_config() -> SocketConfig {
     //let link_condition = None;
     let link_condition = Some(LinkConditionerConfig::average_condition());
     //    let link_condition = Some(LinkConditionerConfig {
@@ -10,5 +10,5 @@ pub fn get_shared_config() -> SocketSharedConfig {
     //        incoming_corruption: 0.0
     //    });
 
-    return SocketSharedConfig::new(link_condition, None);
+    return SocketConfig::new(link_condition, None);
 }

@@ -4,46 +4,51 @@ use std::{
     task::{Context, Poll},
 };
 
-use futures_core::Stream;
-
 use async_dup::Arc;
-
+use futures_core::Stream;
 use http::{header, HeaderValue, Response};
-
+use log::info;
+use once_cell::sync::OnceCell;
 use smol::{
     io::{AsyncBufReadExt, AsyncWriteExt, BufReader, Lines},
     prelude::*,
     Async,
 };
-
-use log::info;
-
-use once_cell::sync::OnceCell;
 use webrtc_unreliable::SessionEndpoint;
 
-use crate::{executor, ServerSocketConfig};
+use naia_socket_shared::SocketConfig;
+
+use crate::{executor, server_addrs::ServerAddrs};
 
 static RTC_URL_PATH: OnceCell<String> = OnceCell::new();
 
-pub fn start_session_server(server_config: ServerSocketConfig, session_endpoint: SessionEndpoint) {
+pub fn start_session_server(
+    server_addrs: ServerAddrs,
+    config: SocketConfig,
+    session_endpoint: SessionEndpoint,
+) {
     RTC_URL_PATH
-        .set(format!("POST /{}", server_config.shared.rtc_endpoint_path))
+        .set(format!("POST /{}", config.rtc_endpoint_path))
         .unwrap();
     executor::spawn(async move {
-        listen(server_config, session_endpoint.clone()).await;
+        listen(server_addrs, config, session_endpoint.clone()).await;
     })
     .detach();
 }
 
 /// Listens for incoming connections and serves them.
-async fn listen(server_config: ServerSocketConfig, session_endpoint: SessionEndpoint) {
-    let socket_address = server_config.session_listen_addr;
+async fn listen(
+    server_addrs: ServerAddrs,
+    config: SocketConfig,
+    session_endpoint: SessionEndpoint,
+) {
+    let socket_address = server_addrs.session_listen_addr;
 
     let listener = Async::<TcpListener>::bind(socket_address).unwrap();
     info!(
         "Session initiator available at POST http://{}/{}",
         listener.get_ref().local_addr().unwrap(),
-        server_config.shared.rtc_endpoint_path
+        config.rtc_endpoint_path
     );
 
     loop {

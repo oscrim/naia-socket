@@ -31,5 +31,5 @@ pub use impls::{Instant, Random, Timer, Timestamp};
 pub use link_conditioner_config::LinkConditionerConfig;
 pub use packet_reader::PacketReader;
 pub use reference::Ref;
-pub use shared_config::SocketSharedConfig;
+pub use shared_config::SocketConfig;
 pub use time_queue::TimeQueue;

@@ -1,40 +1,35 @@
 use std::{default::Default, net::SocketAddr};
 
-use naia_socket_shared::SocketSharedConfig;
-
-/// Config used to initialize a ServerSocket
+/// List of addresses needed to start listening on a ServerSocket
 #[derive(Clone, Debug)]
-pub struct ServerSocketConfig {
+pub struct ServerAddrs {
     /// IP Address to listen on for the signaling portion of WebRTC
     pub session_listen_addr: SocketAddr,
     /// IP Address to listen on for UDP WebRTC data channels
     pub webrtc_listen_addr: SocketAddr,
     /// The public WebRTC IP address to advertise
     pub public_webrtc_addr: SocketAddr,
-    /// Config which is shared between Client & Server
-    pub shared: SocketSharedConfig,
 }
 
-impl ServerSocketConfig {
-    /// Create a new Config which will be used to initialize a ServerSocket
+impl ServerAddrs {
+    /// Create a new ServerSocketAddrs instance which will be used to start
+    /// listening on a ServerSocket
     pub fn new(
         session_listen_addr: SocketAddr,
         webrtc_listen_addr: SocketAddr,
         public_webrtc_addr: SocketAddr,
-        shared: SocketSharedConfig,
     ) -> Self {
-        ServerSocketConfig {
+        ServerAddrs {
             session_listen_addr,
             webrtc_listen_addr,
             public_webrtc_addr,
-            shared,
         }
     }
 }
 
-impl Default for ServerSocketConfig {
+impl Default for ServerAddrs {
     fn default() -> Self {
-        ServerSocketConfig::new(
+        ServerAddrs::new(
             "127.0.0.1:14191"
                 .parse()
                 .expect("could not parse HTTP address/port"),
@@ -44,7 +39,6 @@ impl Default for ServerSocketConfig {
             "127.0.0.1:14192"
                 .parse()
                 .expect("could not parse advertised public WebRTC data address/port"),
-            SocketSharedConfig::default(),
         )
     }
 }

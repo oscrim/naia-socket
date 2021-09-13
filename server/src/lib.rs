@@ -18,27 +18,27 @@ extern crate log;
 #[macro_use]
 extern crate cfg_if;
 
-pub use naia_socket_shared::{LinkConditionerConfig, SocketSharedConfig, Timer};
+pub use naia_socket_shared::{LinkConditionerConfig, SocketConfig, Timer};
 
-mod async_server_socket;
-mod config;
+mod async_socket;
 mod error;
 mod impls;
 mod packet;
 mod packet_receiver;
 mod packet_sender;
-mod server_socket;
+mod server_addrs;
+mod socket;
 
 /// Executor for Server
 pub mod executor;
 
-pub use config::ServerSocketConfig;
 pub use error::NaiaServerSocketError;
 pub use naia_socket_shared::find_my_ip_address;
 pub use packet::Packet;
 pub use packet_receiver::PacketReceiver;
 pub use packet_sender::PacketSender;
-pub use server_socket::ServerSocket;
+pub use server_addrs::ServerAddrs;
+pub use socket::Socket;
 
 cfg_if! {
     if #[cfg(all(feature = "use-udp", feature = "use-webrtc"))]

@@ -1,27 +1,32 @@
 extern crate log;
 
-use std::collections::VecDeque;
+use std::{collections::VecDeque, net::SocketAddr};
 
-use naia_socket_shared::Ref;
+use naia_socket_shared::{Ref, SocketConfig};
 
-use crate::{
-    packet_receiver::ConditionedPacketReceiver, ClientSocketConfig, PacketReceiver, PacketSender,
-};
+use crate::{packet_receiver::ConditionedPacketReceiver, PacketReceiver, PacketSender};
 
 use super::{packet_receiver::PacketReceiverImpl, webrtc_internal::webrtc_initialize};
 
 /// A client-side socket which communicates with an underlying unordered &
 /// unreliable protocol
 #[derive(Debug)]
-pub struct ClientSocket;
+pub struct Socket {
+    config: SocketConfig,
+}
 
-impl ClientSocket {
-    /// Returns a new ClientSocket, connected to the given socket address
-    pub fn connect(client_config: ClientSocketConfig) -> (PacketSender, Box<dyn PacketReceiver>) {
+impl Socket {
+    /// Create a new Socket
+    pub fn new(config: SocketConfig) -> Self {
+        Socket { config }
+    }
+
+    /// Connects to the given server address
+    pub fn connect(&self, server_address: SocketAddr) -> (PacketSender, Box<dyn PacketReceiver>) {
         let message_queue = Ref::new(VecDeque::new());
         let data_channel = webrtc_initialize(
-            client_config.server_address,
-            client_config.shared.rtc_endpoint_path,
+            server_address,
+            self.config.rtc_endpoint_path.clone(),
             message_queue.clone(),
         );
 
@@ -38,7 +43,7 @@ impl ClientSocket {
         let sender = packet_sender.clone();
         let receiver: Box<dyn PacketReceiver> = {
             let inner_receiver = Box::new(packet_receiver.clone());
-            if let Some(config) = &client_config.shared.link_condition_config {
+            if let Some(config) = &self.config.link_condition_config {
                 Box::new(ConditionedPacketReceiver::new(inner_receiver, config))
             } else {
                 inner_receiver
@@ -51,7 +56,7 @@ impl ClientSocket {
 
 #[allow(unsafe_code)]
 #[cfg(feature = "multithread")]
-unsafe impl Send for ClientSocket {}
+unsafe impl Send for Socket {}
 #[allow(unsafe_code)]
 #[cfg(feature = "multithread")]
-unsafe impl Sync for ClientSocket {}
+unsafe impl Sync for Socket {}

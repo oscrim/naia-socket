@@ -1,4 +1,4 @@
-use naia_server_socket::{Packet, PacketReceiver, PacketSender, ServerSocket, ServerSocketConfig};
+use naia_server_socket::{Packet, PacketReceiver, PacketSender, ServerAddrs, Socket};
 
 use naia_socket_demo_shared::{get_server_address, get_shared_config, PING_MSG, PONG_MSG};
 
@@ -11,7 +11,7 @@ impl App {
     pub fn new() -> Self {
         info!("Naia Server Socket Demo started");
 
-        let server_socket_config = ServerSocketConfig::new(
+        let server_addrs = ServerAddrs::new(
             get_server_address(),
             // IP Address to listen on for UDP WebRTC data channels
             "127.0.0.1:14192"
@@ -21,10 +21,10 @@ impl App {
             "127.0.0.1:14192"
                 .parse()
                 .expect("could not parse advertised public WebRTC data address/port"),
-            get_shared_config(),
         );
 
-        let (sender, receiver) = ServerSocket::listen(server_socket_config);
+        let socket = Socket::new(get_shared_config());
+        let (sender, receiver) = socket.listen(server_addrs);
 
         App { sender, receiver }
     }

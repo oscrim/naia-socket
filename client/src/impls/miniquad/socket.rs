@@ -1,8 +1,8 @@
-use std::collections::VecDeque;
+use std::{collections::VecDeque, net::SocketAddr};
 
-use crate::{
-    packet_receiver::ConditionedPacketReceiver, ClientSocketConfig, PacketReceiver, PacketSender,
-};
+use naia_socket_shared::SocketConfig;
+
+use crate::{packet_receiver::ConditionedPacketReceiver, PacketReceiver, PacketSender};
 
 use super::{
     packet_receiver::PacketReceiverImpl,
@@ -12,21 +12,28 @@ use super::{
 /// A client-side socket which communicates with an underlying unordered &
 /// unreliable protocol
 #[derive(Debug)]
-pub struct ClientSocket;
+pub struct Socket {
+    config: SocketConfig,
+}
 
-impl ClientSocket {
-    /// Returns a new ClientSocket, connected to the given socket address
-    pub fn connect(client_config: ClientSocketConfig) -> (PacketSender, Box<dyn PacketReceiver>) {
+impl Socket {
+    /// Create a new Socket
+    pub fn new(config: SocketConfig) -> Self {
+        Socket { config }
+    }
+
+    /// Connects to the given server address
+    pub fn connect(&self, server_address: SocketAddr) -> (PacketSender, Box<dyn PacketReceiver>) {
         unsafe {
             MESSAGE_QUEUE = Some(VecDeque::new());
             ERROR_QUEUE = Some(VecDeque::new());
             naia_connect(
-                JsObject::string(client_config.server_address.to_string().as_str()),
-                JsObject::string(client_config.shared.rtc_endpoint_path.as_str()),
+                JsObject::string(server_address.to_string().as_str()),
+                JsObject::string(self.config.rtc_endpoint_path.as_str()),
             );
         }
 
-        let conditioner_config = client_config.shared.link_condition_config.clone();
+        let conditioner_config = self.config.link_condition_config.clone();
 
         let sender = PacketSender::new();
         let receiver: Box<dyn PacketReceiver> = {

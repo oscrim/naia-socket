@@ -4,31 +4,41 @@ use crossbeam::channel;
 
 use futures_util::SinkExt;
 
+use naia_socket_shared::SocketConfig;
+
+use crate::{executor, impls::Socket as AsyncSocket};
+
 use super::{
-    async_server_socket::AsyncServerSocketTrait,
+    async_socket::AsyncSocketTrait,
     packet_receiver::{ConditionedPacketReceiverImpl, PacketReceiver, PacketReceiverImpl},
     packet_sender::PacketSender,
+    server_addrs::ServerAddrs,
 };
-use crate::{executor, impls::ServerSocket as AsyncServerSocket, ServerSocketConfig};
 
-/// Server Socket is able to send and receive messages from remote Clients
+/// Socket is able to send and receive messages from remote Clients
 #[derive(Debug)]
-pub struct ServerSocket;
+pub struct Socket {
+    config: SocketConfig,
+}
 
-impl ServerSocket {
-    /// Returns a new ServerSocket, listening at the given socket addresses
-    pub fn listen(
-        server_socket_config: ServerSocketConfig,
-    ) -> (PacketSender, Box<dyn PacketReceiver>) {
+impl Socket {
+    /// Create a new Socket
+    pub fn new(config: SocketConfig) -> Self {
+        Socket { config }
+    }
+
+    /// Listens on the Socket for incoming communication from Clients
+    pub fn listen(&self, server_addrs: ServerAddrs) -> (PacketSender, Box<dyn PacketReceiver>) {
         // Set up receiver loop
         let (from_client_sender, from_client_receiver) = channel::unbounded();
         let (sender_sender, sender_receiver) = channel::bounded(1);
 
-        let server_config = server_socket_config.clone();
+        let server_addrs_clone = server_addrs.clone();
+        let config_clone = self.config.clone();
 
         executor::spawn(async move {
             // Create async socket
-            let mut async_socket = AsyncServerSocket::listen(server_config).await;
+            let mut async_socket = AsyncSocket::listen(server_addrs_clone, config_clone).await;
 
             sender_sender.send(async_socket.get_sender()).unwrap(); //TODO: handle result..
 
@@ -56,7 +66,7 @@ impl ServerSocket {
         })
         .detach();
 
-        let conditioner_config = server_socket_config.shared.link_condition_config.clone();
+        let conditioner_config = self.config.link_condition_config.clone();
 
         let receiver: Box<dyn PacketReceiver> = match &conditioner_config {
             Some(config) => Box::new(ConditionedPacketReceiverImpl::new(

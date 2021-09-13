@@ -1,15 +1,18 @@
-use async_io::Async;
-use async_trait::async_trait;
-use futures_channel::mpsc;
-use futures_util::{pin_mut, select, FutureExt, StreamExt};
 use std::{
     io::Error as IoError,
     net::{SocketAddr, UdpSocket},
 };
 
+use async_io::Async;
+use async_trait::async_trait;
+use futures_channel::mpsc;
+use futures_util::{pin_mut, select, FutureExt, StreamExt};
+
+use naia_socket_shared::SocketConfig;
+
 use crate::{
-    async_server_socket::AsyncServerSocketTrait, error::NaiaServerSocketError, Packet,
-    ServerSocketConfig,
+    async_socket::AsyncSocketTrait, error::NaiaServerSocketError, packet::Packet,
+    server_addrs::ServerAddrs,
 };
 
 const CLIENT_CHANNEL_SIZE: usize = 8;
@@ -17,21 +20,21 @@ const CLIENT_CHANNEL_SIZE: usize = 8;
 /// A socket server which communicates with clients using an underlying
 /// unordered & unreliable network protocol
 #[derive(Debug)]
-pub struct ServerSocket {
+pub struct Socket {
     socket: Async<UdpSocket>,
     to_client_sender: mpsc::Sender<Packet>,
     to_client_receiver: mpsc::Receiver<Packet>,
     receive_buffer: Vec<u8>,
 }
 
-impl ServerSocket {
+impl Socket {
     /// Returns a new ServerSocket, listening at the given socket address
-    pub async fn listen(config: ServerSocketConfig) -> Self {
-        let socket = Async::new(UdpSocket::bind(&config.session_listen_addr).unwrap()).unwrap();
+    pub async fn listen(addrs: ServerAddrs, _config: SocketConfig) -> Self {
+        let socket = Async::new(UdpSocket::bind(&addrs.session_listen_addr).unwrap()).unwrap();
 
         let (to_client_sender, to_client_receiver) = mpsc::channel(CLIENT_CHANNEL_SIZE);
 
-        ServerSocket {
+        Socket {
             socket,
             to_client_sender,
             to_client_receiver,
@@ -42,7 +45,7 @@ impl ServerSocket {
 }
 
 #[async_trait]
-impl AsyncServerSocketTrait for ServerSocket {
+impl AsyncSocketTrait for Socket {
     async fn receive(&mut self) -> Result<Packet, NaiaServerSocketError> {
         enum Next {
             FromClientMessage(Result<(usize, SocketAddr), IoError>),
