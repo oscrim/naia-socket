@@ -13,16 +13,30 @@ use super::{packet_receiver::PacketReceiverImpl, packet_sender::PacketSender};
 #[derive(Debug)]
 pub struct Socket {
     config: SocketConfig,
+    io: Option<Io>,
+}
+
+/// Contains internal socket packet sender/receiver
+#[derive(Debug)]
+struct Io {
+    /// Used to send packets through the socket
+    pub packet_sender: PacketSender,
+    /// Used to receive packets from the socket
+    pub packet_receiver: PacketReceiver,
 }
 
 impl Socket {
     /// Create a new Socket
     pub fn new(config: SocketConfig) -> Self {
-        Socket { config }
+        Socket { config, io: None }
     }
 
     /// Connects to the given server address
-    pub fn connect(&self, server_address: SocketAddr) -> (PacketSender, PacketReceiver) {
+    pub fn connect(&mut self, server_address: SocketAddr) {
+        if self.io.is_some() {
+            panic!("Socket already listening!");
+        }
+
         let client_ip_address = find_my_ip_address().expect("cannot find current ip address");
 
         let socket = Ref::new(UdpSocket::bind((client_ip_address, 0)).unwrap());
@@ -45,6 +59,30 @@ impl Socket {
             }
         };
 
-        (sender, PacketReceiver::new(receiver))
+        self.io = Some(Io {
+            packet_sender: sender,
+            packet_receiver: PacketReceiver::new(receiver),
+        });
+    }
+
+    /// Gets a PacketSender which can be used to send packets through the Socket
+    pub fn get_packet_sender(&self) -> PacketSender {
+        return self
+            .io
+            .as_ref()
+            .expect("Socket is not connected yet! Call Socket.connect() before this.")
+            .packet_sender
+            .clone();
+    }
+
+    /// Gets a PacketReceiver which can be used to receive packets from the
+    /// Socket
+    pub fn get_packet_receiver(&self) -> PacketReceiver {
+        return self
+            .io
+            .as_ref()
+            .expect("Socket is not connected yet! Call Socket.connect() before this.")
+            .packet_receiver
+            .clone();
     }
 }

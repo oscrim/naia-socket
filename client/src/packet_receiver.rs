@@ -5,7 +5,7 @@ use naia_socket_shared::{link_condition_logic, LinkConditionerConfig, TimeQueue}
 use super::{error::NaiaClientSocketError, packet::Packet};
 
 /// Used to receive packets from the Client Socket
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct PacketReceiver {
     inner: Box<dyn PacketReceiverTrait>,
 }
@@ -23,13 +23,13 @@ impl PacketReceiver {
 }
 
 /// Used to receive packets from the Client Socket
-pub trait PacketReceiverTrait: Debug {
+pub trait PacketReceiverTrait: PacketReceiverClone + Debug {
     /// Receives a packet from the Client Socket
     fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError>;
 }
 
 /// Used to receive packets from the Client Socket
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct ConditionedPacketReceiver {
     inner_receiver: Box<dyn PacketReceiverTrait>,
     link_conditioner_config: LinkConditionerConfig,
@@ -89,5 +89,23 @@ impl PacketReceiverTrait for ConditionedPacketReceiver {
         } else {
             return Ok(None);
         }
+    }
+}
+
+/// Used to clone Box<dyn PacketReceiverTrait>
+pub trait PacketReceiverClone {
+    /// Clone the boxed PacketReceiver
+    fn clone_box(&self) -> Box<dyn PacketReceiverTrait>;
+}
+
+impl<T: 'static + PacketReceiverTrait + Clone> PacketReceiverClone for T {
+    fn clone_box(&self) -> Box<dyn PacketReceiverTrait> {
+        Box::new(self.clone())
+    }
+}
+
+impl Clone for Box<dyn PacketReceiverTrait> {
+    fn clone(&self) -> Box<dyn PacketReceiverTrait> {
+        PacketReceiverClone::clone_box(self.as_ref())
     }
 }

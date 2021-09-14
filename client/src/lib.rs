@@ -22,15 +22,12 @@ cfg_if! {
     }
 }
 
-pub use naia_socket_shared::{
-    find_my_ip_address, Instant, LinkConditionerConfig, PacketReader, Ref, SocketConfig, Timer,
-    Timestamp,
-};
-
 mod error;
 mod impls;
 mod packet;
 mod packet_receiver;
+
+pub use naia_socket_shared::Timer;
 
 pub use error::NaiaClientSocketError;
 pub use impls::{PacketSender, Socket};
