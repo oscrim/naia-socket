@@ -1,19 +1,21 @@
-use std::net::{SocketAddr, UdpSocket};
+use std::{
+    net::{SocketAddr, UdpSocket},
+    sync::{Arc, Mutex},
+};
 
 use crate::Packet;
-use naia_socket_shared::Ref;
 
 /// Handles sending messages to the Server for a given Client Socket
 #[derive(Clone)]
 pub struct PacketSender {
     address: SocketAddr,
-    socket: Ref<UdpSocket>,
+    socket: Arc<Mutex<UdpSocket>>,
 }
 
 impl PacketSender {
     /// Create a new PacketSender, if supplied with the Server's address & a
     /// reference back to the parent Socket
-    pub fn new(address: SocketAddr, socket: Ref<UdpSocket>) -> Self {
+    pub fn new(address: SocketAddr, socket: Arc<Mutex<UdpSocket>>) -> Self {
         PacketSender { address, socket }
     }
 
@@ -22,7 +24,9 @@ impl PacketSender {
         //send it
         if let Err(_) = self
             .socket
-            .borrow()
+            .as_ref()
+            .lock()
+            .unwrap()
             .send_to(&packet.payload(), self.address)
         {
             //TODO: handle this error

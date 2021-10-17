@@ -16,14 +16,12 @@ use super::{
 };
 
 /// Socket is able to send and receive messages from remote Clients
-
 pub struct Socket {
     config: SocketConfig,
     io: Option<Io>,
 }
 
 /// Contains internal socket packet sender/receiver
-
 struct Io {
     /// Used to send packets through the socket
     pub packet_sender: PacketSender,
