@@ -4,7 +4,7 @@ use crate::Packet;
 use naia_socket_shared::Ref;
 
 /// Handles sending messages to the Server for a given Client Socket
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct PacketSender {
     address: SocketAddr,
     socket: Ref<UdpSocket>,

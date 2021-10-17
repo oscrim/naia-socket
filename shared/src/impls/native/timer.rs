@@ -3,7 +3,6 @@ use std::time::{Duration, Instant};
 /// A Timer with a given duration after which it will enter into a "Ringing"
 /// state. The Timer can be reset at an given time, or manually set to start
 /// "Ringing" again.
-#[derive(Debug)]
 pub struct Timer {
     duration: Duration,
     last: Instant,

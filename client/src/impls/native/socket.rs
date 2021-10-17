@@ -10,14 +10,14 @@ use super::{packet_receiver::PacketReceiverImpl, packet_sender::PacketSender};
 
 /// A client-side socket which communicates with an underlying unordered &
 /// unreliable protocol
-#[derive(Debug)]
+
 pub struct Socket {
     config: SocketConfig,
     io: Option<Io>,
 }
 
 /// Contains internal socket packet sender/receiver
-#[derive(Debug)]
+
 struct Io {
     /// Used to send packets through the socket
     pub packet_sender: PacketSender,

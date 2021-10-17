@@ -2,7 +2,7 @@ use js_sys::Date;
 use std::{cmp::Ordering, time::Duration};
 
 /// Represents a specific moment in time
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
+#[derive(Clone, PartialEq, PartialOrd)]
 pub struct Instant {
     inner: f64,
 }

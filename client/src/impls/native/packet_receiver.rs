@@ -8,7 +8,7 @@ use naia_socket_shared::Ref;
 use crate::{error::NaiaClientSocketError, packet::Packet, packet_receiver::PacketReceiverTrait};
 
 /// Handles receiving messages from the Server through a given Client Socket
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct PacketReceiverImpl {
     address: SocketAddr,
     socket: Ref<UdpSocket>,

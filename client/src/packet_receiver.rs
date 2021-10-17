@@ -1,11 +1,9 @@
-use std::fmt::Debug;
-
 use naia_socket_shared::{link_condition_logic, LinkConditionerConfig, TimeQueue};
 
 use super::{error::NaiaClientSocketError, packet::Packet};
 
 /// Used to receive packets from the Client Socket
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct PacketReceiver {
     inner: Box<dyn PacketReceiverTrait>,
 }
@@ -23,13 +21,13 @@ impl PacketReceiver {
 }
 
 /// Used to receive packets from the Client Socket
-pub trait PacketReceiverTrait: PacketReceiverClone + Debug {
+pub trait PacketReceiverTrait: PacketReceiverClone + Send + Sync {
     /// Receives a packet from the Client Socket
     fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError>;
 }
 
 /// Used to receive packets from the Client Socket
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct ConditionedPacketReceiver {
     inner_receiver: Box<dyn PacketReceiverTrait>,
     link_conditioner_config: LinkConditionerConfig,

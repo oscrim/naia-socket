@@ -3,7 +3,7 @@ use crate::{error::NaiaClientSocketError, packet::Packet, packet_receiver::Packe
 use super::shared::{naia_resend_dropped_messages, ERROR_QUEUE, MESSAGE_QUEUE};
 
 /// Handles receiving messages from the Server through a given Client Socket
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct PacketReceiverImpl {}
 
 impl PacketReceiverImpl {

@@ -15,7 +15,7 @@ use naia_socket_shared::Ref;
 
 use crate::Packet;
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct SessionAnswer {
     pub sdp: String,
 
@@ -23,7 +23,7 @@ pub struct SessionAnswer {
     pub _type: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize)]
 pub struct SessionCandidate {
     pub candidate: String,
     #[serde(rename = "sdpMLineIndex")]
@@ -32,7 +32,7 @@ pub struct SessionCandidate {
     pub sdp_mid: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize)]
 pub struct JsSessionResponse {
     pub answer: SessionAnswer,
     pub candidate: SessionCandidate,

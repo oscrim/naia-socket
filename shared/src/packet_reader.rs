@@ -2,7 +2,6 @@ use byteorder::{BigEndian, ReadBytesExt};
 use std::io::Cursor;
 
 /// Contains an underlying byte payload, and provides a Cursor into that payload
-#[derive(Debug)]
 pub struct PacketReader<'s> {
     buffer: &'s [u8],
     cursor: Cursor<&'s [u8]>,

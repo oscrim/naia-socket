@@ -8,7 +8,7 @@ use crate::packet_reader::PacketReader;
 
 /// A Timestamp for a moment in time that can be read/written to/from a byte
 /// stream
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct Timestamp {
     time: u64,
 }

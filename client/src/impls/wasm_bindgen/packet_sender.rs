@@ -7,7 +7,7 @@ use naia_socket_shared::Ref;
 use crate::Packet;
 
 /// Handles sending messages to the Server for a given Client Socket
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct PacketSender {
     data_channel: RtcDataChannel,
     dropped_outgoing_messages: Ref<VecDeque<Packet>>,

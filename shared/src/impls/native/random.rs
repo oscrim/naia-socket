@@ -1,7 +1,7 @@
 use rand::Rng;
 
 /// Container for cross-platform Random methods
-#[derive(Debug)]
+
 pub struct Random {}
 
 impl Random {

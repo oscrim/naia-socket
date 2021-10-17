@@ -5,7 +5,7 @@ use super::link_conditioner_config::LinkConditionerConfig;
 const DEFAULT_RTC_PATH: &str = "new_rtc_session";
 
 /// Contains Config properties which will be shared by Server and Client sockets
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct SocketConfig {
     /// Configuration used to simulate network conditions
     pub link_condition_config: Option<LinkConditionerConfig>,

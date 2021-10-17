@@ -5,7 +5,7 @@ cfg_if! {
             sync::{Arc, Mutex, MutexGuard},
         };
 
-        #[derive(Debug)]
+
         pub struct Guard<'a, T: ?Sized> {
             inner: MutexGuard<'a, T>,
         }
@@ -25,7 +25,7 @@ cfg_if! {
         }
 
         /// A reference abstraction that can handle single-threaded and multi-threaded environments
-        #[derive(Debug)]
+
         pub struct Ref<T: ?Sized> {
             inner: Arc<Mutex<T>>,
         }
@@ -85,7 +85,7 @@ cfg_if! {
 
         use send_wrapper::SendWrapper;
 
-        #[derive(Debug)]
+
         pub struct Guard<'a, T: ?Sized> {
             inner: StdRef<'a, T>,
         }
@@ -98,7 +98,7 @@ cfg_if! {
             }
         }
 
-        #[derive(Debug)]
+
         pub struct GuardMut<'a, T: ?Sized> {
             inner: StdRefMut<'a, T>,
         }
@@ -119,7 +119,7 @@ cfg_if! {
 
         /// A reference abstraction that can handle single-threaded and multi-threaded
         /// environments
-        #[derive(Debug)]
+
         pub struct Ref<T: ?Sized> {
             inner: SendWrapper<Rc<RefCell<T>>>,
         }

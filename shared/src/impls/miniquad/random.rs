@@ -3,7 +3,7 @@ extern "C" {
 }
 
 /// Container for cross-platform Random methods
-#[derive(Debug)]
+
 pub struct Random {}
 
 impl Random {

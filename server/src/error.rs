@@ -2,7 +2,7 @@ use std::{error::Error, fmt, net::SocketAddr};
 
 /// An Error type specifically related to the Naia Server Socket
 /// This is under construction and needs to be cleaned up
-#[derive(Debug)]
+
 pub enum NaiaServerSocketError {
     /// A wrapped error from another library/codebase
     Wrapped(Box<dyn Error + Send + Sync>),
@@ -20,3 +20,5 @@ impl fmt::Display for NaiaServerSocketError {
 }
 
 impl Error for NaiaServerSocketError {}
+//unsafe impl Send for NaiaServerSocketError {}
+//unsafe impl Sync for NaiaServerSocketError {}

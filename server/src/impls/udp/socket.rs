@@ -19,7 +19,6 @@ const CLIENT_CHANNEL_SIZE: usize = 8;
 
 /// A socket server which communicates with clients using an underlying
 /// unordered & unreliable network protocol
-#[derive(Debug)]
 pub struct Socket {
     socket: Async<UdpSocket>,
     to_client_sender: mpsc::Sender<Packet>,

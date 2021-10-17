@@ -1,7 +1,7 @@
 use js_sys::Math::random;
 
 /// Container for cross-platform Random methods
-#[derive(Debug)]
+
 pub struct Random {}
 
 impl Random {

@@ -7,7 +7,7 @@ use naia_socket_shared::Ref;
 use crate::{error::NaiaClientSocketError, packet::Packet, packet_receiver::PacketReceiverTrait};
 
 /// Handles receiving messages from the Server through a given Client Socket
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct PacketReceiverImpl {
     data_channel: RtcDataChannel,
     dropped_outgoing_messages: Ref<VecDeque<Packet>>,
