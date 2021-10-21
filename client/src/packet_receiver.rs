@@ -22,10 +22,23 @@ impl PacketReceiver {
     }
 }
 
-/// Used to receive packets from the Client Socket
-pub trait PacketReceiverTrait: PacketReceiverClone + Send + Sync + Debug {
-    /// Receives a packet from the Client Socket
-    fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError>;
+cfg_if! {
+    if #[cfg(feature = "multithread")]
+    {
+        /// Used to receive packets from the Client Socket
+        pub trait PacketReceiverTrait: PacketReceiverClone + Send + Sync + Debug {
+            /// Receives a packet from the Client Socket
+            fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError>;
+        }
+    }
+    else
+    {
+        /// Used to receive packets from the Client Socket
+        pub trait PacketReceiverTrait: PacketReceiverClone + Debug {
+            /// Receives a packet from the Client Socket
+            fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError>;
+        }
+    }
 }
 
 /// Used to receive packets from the Client Socket
