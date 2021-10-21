@@ -21,9 +21,9 @@ wbindgen = [ "naia-socket-shared/wbindgen", "url", "wasm-bindgen", "js-sys", "we
 mquad = [ "naia-socket-shared/mquad", "miniquad" ]
 
 [dependencies]
+naia-socket-shared = { path = "../shared", version = "=0.7.0-alpha.1" }
 cfg-if = "0.1.10"
 log = { version = "0.4" }
-naia-socket-shared = { path = "../shared" }
 url = { version = "2.1.1", optional = true }
 wasm-bindgen = { version = "0.2.45", features = [ "serde-serialize" ], optional = true  }
 js-sys = { version = "0.3", optional = true  }

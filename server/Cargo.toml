@@ -23,7 +23,7 @@ use-udp = [ ]
 use-webrtc = [ "webrtc-unreliable", "async-dup", "http", "futures-core" ]
 
 [dependencies]
-naia-socket-shared = { path = "../shared" }
+naia-socket-shared = { path = "../shared", version = "=0.7.0-alpha.1" }
 log = { version = "0.4" }
 cfg-if = { version = "0.1.10" }
 async-io = { version = "1.1" }
