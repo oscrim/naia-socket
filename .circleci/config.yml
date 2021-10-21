@@ -29,15 +29,15 @@ jobs:
             rustfmt --version
             cargo fmt --all -- --check --color=auto
       - run:
-          name: Build Server Example (UDP)
+          name: Build Server Demo (UDP)
           working_directory: ~/project/demo/server
           command: cargo build --target x86_64-unknown-linux-gnu --features "use-udp"
       - run:
-          name: Build Server Example (WebRTC)
+          name: Build Server Demo (WebRTC)
           working_directory: ~/project/demo/server
           command: cargo build --target x86_64-unknown-linux-gnu --features "use-webrtc"
       - run:
-          name: Build Client Example (Linux)
+          name: Build Client Demo (Linux)
           working_directory: ~/project/demo/client/wasm_bindgen
           command: cargo build --target x86_64-unknown-linux-gnu
       - save_cache:

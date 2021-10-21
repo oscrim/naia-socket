@@ -2,26 +2,27 @@
 xdg-open http://localhost:3114/ # This will open a browser on Linux
 open http://localhost:3114/ # This will open a browser on macOS
 
-# replace 'client' & 'webserver' below with the appropriate directory names for your project
-client='naia-client-socket-miniquad-example'
-webserver_dir='dev_http_server'
+# replace 'client' & 'directory' below with the appropriate directory names for your project
+client='naia-socket-client-demo-mq'
+directory='client/miniquad'
 
 get_reload_actions(){
   local OUTPUT=''
   local c=$1
-  local w=$2
-  FMT='rm -rf %s/dist &&
-  mkdir %s/dist &&
-  cargo build --target wasm32-unknown-unknown --features mquad --target-dir target &&
-  cp target/wasm32-unknown-unknown/debug/%s.wasm %s/dist/%s.wasm &&
-  cp -a static/. %s/dist/ &&
-  cp -a js/. %s/dist/ &&
-  cd %s &&
+  local d=$2
+  FMT='
+  cargo build --target wasm32-unknown-unknown --target-dir target;
+  cd ../../dev_http_server;
+  rm -rf dist;
+  mkdir dist;
+  cp ../%s/target/wasm32-unknown-unknown/debug/%s.wasm dist/%s.wasm;
+  cp -a ../%s/static/. dist/;
+  cp -a ../%s/js/. dist/;
   cargo run'
-  printf -v OUTPUT "$FMT" $w $w $c $w $c $w $w $w
+  printf -v OUTPUT "$FMT" $d $c $c $d $d
   echo $OUTPUT
 }
 
 cd demo/client/miniquad || exit
-actions="$(get_reload_actions $client $webserver_dir)"
-watchexec -r -s SIGKILL --ignore $webserver_dir/dist --ignore target --clear "$actions"
+actions="$(get_reload_actions $client $directory)"
+watchexec -r -s SIGKILL --ignore dev_http_server/dist --ignore target --clear "$actions"

@@ -1,59 +1,57 @@
 use std::{io::Error as IoError, net::SocketAddr};
 
 use async_trait::async_trait;
-
+use futures_channel::mpsc;
+use futures_util::{pin_mut, select, FutureExt, StreamExt};
 use webrtc_unreliable::{
     MessageResult, MessageType, SendError, Server as InnerRtcServer, SessionEndpoint,
 };
 
-use futures_channel::mpsc;
-use futures_util::{pin_mut, select, FutureExt, StreamExt};
+use naia_socket_shared::SocketConfig;
 
-use naia_socket_shared::LinkConditionerConfig;
+use crate::{
+    async_socket::AsyncSocketTrait, error::NaiaServerSocketError, packet::Packet,
+    server_addrs::ServerAddrs,
+};
 
 use super::session::start_session_server;
 
-use crate::{
-    error::NaiaServerSocketError, link_conditioner::LinkConditioner, message_sender::MessageSender,
-    Packet, ServerSocketTrait,
-};
-
 const CLIENT_CHANNEL_SIZE: usize = 8;
 
-/// A socket server which communicates with clients using an underlying
+/// A socket which communicates with clients using an underlying
 /// unordered & unreliable network protocol
 #[derive(Debug)]
-pub struct ServerSocket {
+pub struct Socket {
     rtc_server: RtcServer,
     to_client_sender: mpsc::Sender<Packet>,
     to_client_receiver: mpsc::Receiver<Packet>,
 }
 
-impl ServerSocket {
+impl Socket {
     /// Returns a new ServerSocket, listening at the given socket address
-    pub async fn listen(
-        session_listen_addr: SocketAddr,
-        webrtc_listen_addr: SocketAddr,
-        public_webrtc_addr: SocketAddr,
-    ) -> Box<dyn ServerSocketTrait> {
+    pub async fn listen(server_addrs: ServerAddrs, config: SocketConfig) -> Self {
         let (to_client_sender, to_client_receiver) = mpsc::channel(CLIENT_CHANNEL_SIZE);
 
-        let rtc_server = RtcServer::new(webrtc_listen_addr, public_webrtc_addr).await;
+        let rtc_server = RtcServer::new(
+            server_addrs.webrtc_listen_addr,
+            server_addrs.public_webrtc_addr,
+        )
+        .await;
 
-        let socket = ServerSocket {
+        let socket = Socket {
             rtc_server,
             to_client_sender,
             to_client_receiver,
         };
 
-        start_session_server(session_listen_addr, socket.rtc_server.session_endpoint());
+        start_session_server(server_addrs, config, socket.rtc_server.session_endpoint());
 
-        Box::new(socket)
+        socket
     }
 }
 
 #[async_trait]
-impl ServerSocketTrait for ServerSocket {
+impl AsyncSocketTrait for Socket {
     async fn receive(&mut self) -> Result<Packet, NaiaServerSocketError> {
         enum Next {
             FromClientMessage(Result<Packet, IoError>),
@@ -115,15 +113,8 @@ impl ServerSocketTrait for ServerSocket {
         }
     }
 
-    fn get_sender(&mut self) -> MessageSender {
-        return MessageSender::new(self.to_client_sender.clone());
-    }
-
-    fn with_link_conditioner(
-        self: Box<Self>,
-        config: &LinkConditionerConfig,
-    ) -> Box<dyn ServerSocketTrait> {
-        Box::new(LinkConditioner::new(config, self))
+    fn get_sender(&self) -> mpsc::Sender<Packet> {
+        return self.to_client_sender.clone();
     }
 }
 

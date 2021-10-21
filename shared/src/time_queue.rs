@@ -4,7 +4,7 @@ use super::Instant;
 
 /// A queue for items marked by time, will only ever pop items from the queue if
 /// the time
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct TimeQueue<T: Eq + PartialEq> {
     queue: BinaryHeap<ItemContainer<T>>,
 }
@@ -54,7 +54,7 @@ impl<T: Eq + PartialEq> TimeQueue<T> {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ItemContainer<T: Eq + PartialEq> {
     pub instant: Instant,
     pub item: T,

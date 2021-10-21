@@ -1,53 +1,51 @@
-use async_io::Async;
-use async_trait::async_trait;
-use futures_channel::mpsc;
-use futures_util::{pin_mut, select, FutureExt, StreamExt};
 use std::{
     io::Error as IoError,
     net::{SocketAddr, UdpSocket},
 };
 
-use naia_socket_shared::LinkConditionerConfig;
+use async_io::Async;
+use async_trait::async_trait;
+use futures_channel::mpsc;
+use futures_util::{pin_mut, select, FutureExt, StreamExt};
 
-use crate::{error::NaiaServerSocketError, Packet, ServerSocketTrait};
+use naia_socket_shared::SocketConfig;
 
-use crate::{link_conditioner::LinkConditioner, message_sender::MessageSender};
+use crate::{
+    async_socket::AsyncSocketTrait, error::NaiaServerSocketError, packet::Packet,
+    server_addrs::ServerAddrs,
+};
 
 const CLIENT_CHANNEL_SIZE: usize = 8;
 
 /// A socket server which communicates with clients using an underlying
 /// unordered & unreliable network protocol
 #[derive(Debug)]
-pub struct ServerSocket {
+pub struct Socket {
     socket: Async<UdpSocket>,
     to_client_sender: mpsc::Sender<Packet>,
     to_client_receiver: mpsc::Receiver<Packet>,
     receive_buffer: Vec<u8>,
 }
 
-impl ServerSocket {
+impl Socket {
     /// Returns a new ServerSocket, listening at the given socket address
-    pub async fn listen(
-        session_listen_addr: SocketAddr,
-        _webrtc_listen_addr: SocketAddr,
-        _public_webrtc_addr: SocketAddr,
-    ) -> Box<dyn ServerSocketTrait> {
-        let socket = Async::new(UdpSocket::bind(&session_listen_addr).unwrap()).unwrap();
+    pub async fn listen(addrs: ServerAddrs, _config: SocketConfig) -> Self {
+        let socket = Async::new(UdpSocket::bind(&addrs.session_listen_addr).unwrap()).unwrap();
 
         let (to_client_sender, to_client_receiver) = mpsc::channel(CLIENT_CHANNEL_SIZE);
 
-        Box::new(ServerSocket {
+        Socket {
             socket,
             to_client_sender,
             to_client_receiver,
             receive_buffer: vec![0; 0x10000], /* Hopefully get rid of this one day.. next version
                                                * of webrtc-unreliable should make that happen */
-        })
+        }
     }
 }
 
 #[async_trait]
-impl ServerSocketTrait for ServerSocket {
+impl AsyncSocketTrait for Socket {
     async fn receive(&mut self) -> Result<Packet, NaiaServerSocketError> {
         enum Next {
             FromClientMessage(Result<(usize, SocketAddr), IoError>),
@@ -103,14 +101,7 @@ impl ServerSocketTrait for ServerSocket {
         }
     }
 
-    fn get_sender(&mut self) -> MessageSender {
-        return MessageSender::new(self.to_client_sender.clone());
-    }
-
-    fn with_link_conditioner(
-        self: Box<Self>,
-        config: &LinkConditionerConfig,
-    ) -> Box<dyn ServerSocketTrait> {
-        Box::new(LinkConditioner::new(config, self))
+    fn get_sender(&self) -> mpsc::Sender<Packet> {
+        return self.to_client_sender.clone();
     }
 }

@@ -2,8 +2,7 @@
 // from the server, we can't just create a simple loop and receive events like
 // in loop_native.rs - doing so would block indefinitely and never allow the
 // browser time to receive messages! (or render, or anything), so we use a
-// set_timeout to receive messages from the socket at a set interval (see
-// app.rs)
+// set_timeout to receive messages from the socket at a set interval
 
 cfg_if! {
     if #[cfg(target_arch = "wasm32")] {
@@ -13,7 +12,7 @@ cfg_if! {
         use wasm_bindgen::prelude::*;
         use wasm_bindgen::JsCast;
 
-        use crate::app::App;
+        use naia_socket_client_demo_app::App;
 
         pub fn start_loop(app: App) {
             fn set_timeout(f: &Closure<dyn FnMut()>, duration: i32) {

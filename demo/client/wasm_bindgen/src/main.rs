@@ -1,16 +1,20 @@
+extern crate cfg_if;
 extern crate log;
 
-mod app;
-mod loop_native;
+use log::LevelFilter;
+use simple_logger::SimpleLogger;
 
-use app::App;
+use naia_socket_client_demo_app::App;
+
+mod loop_native;
 
 fn main() {
     // Uncomment the line below to enable logging. You don't need it if something
     // else (e.g. quicksilver) is logging for you
-    simple_logger::init_with_level(log::Level::Info).expect("A logger was already initialized");
+    SimpleLogger::new()
+        .with_level(LevelFilter::Info)
+        .init()
+        .expect("A logger was already initialized");
 
-    let mut app = App::new();
-
-    loop_native::start_loop(&mut app);
+    loop_native::start_loop(&mut App::new());
 }

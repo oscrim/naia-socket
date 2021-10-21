@@ -1,41 +1,54 @@
 use std::{
-    net::{SocketAddr, TcpListener, TcpStream},
+    net::{TcpListener, TcpStream},
     pin::Pin,
     task::{Context, Poll},
 };
 
-use futures_core::Stream;
-
 use async_dup::Arc;
-
+use futures_core::Stream;
 use http::{header, HeaderValue, Response};
-
+use log::info;
+use once_cell::sync::OnceCell;
 use smol::{
     io::{AsyncBufReadExt, AsyncWriteExt, BufReader, Lines},
     prelude::*,
     Async,
 };
-
-use log::info;
-
 use webrtc_unreliable::SessionEndpoint;
 
-pub fn start_session_server(socket_address: SocketAddr, session_endpoint: SessionEndpoint) {
-    smol::spawn(async move {
-        listen(
-            session_endpoint.clone(),
-            Async::<TcpListener>::bind(socket_address).unwrap(),
-        )
-        .await;
+use naia_socket_shared::SocketConfig;
+
+use crate::{executor, server_addrs::ServerAddrs};
+
+static RTC_URL_PATH: OnceCell<String> = OnceCell::new();
+
+pub fn start_session_server(
+    server_addrs: ServerAddrs,
+    config: SocketConfig,
+    session_endpoint: SessionEndpoint,
+) {
+    RTC_URL_PATH
+        .set(format!("POST /{}", config.rtc_endpoint_path))
+        .unwrap();
+    executor::spawn(async move {
+        listen(server_addrs, config, session_endpoint.clone()).await;
     })
     .detach();
 }
 
 /// Listens for incoming connections and serves them.
-async fn listen(session_endpoint: SessionEndpoint, listener: Async<TcpListener>) {
+async fn listen(
+    server_addrs: ServerAddrs,
+    config: SocketConfig,
+    session_endpoint: SessionEndpoint,
+) {
+    let socket_address = server_addrs.session_listen_addr;
+
+    let listener = Async::<TcpListener>::bind(socket_address).unwrap();
     info!(
-        "Session initiator listening on http://{}",
-        listener.get_ref().local_addr().unwrap()
+        "Session initiator available at POST http://{}/{}",
+        listener.get_ref().local_addr().unwrap(),
+        config.rtc_endpoint_path
     );
 
     loop {
@@ -45,7 +58,7 @@ async fn listen(session_endpoint: SessionEndpoint, listener: Async<TcpListener>)
         let session_endpoint_clone = session_endpoint.clone();
 
         // Spawn a background task serving this connection.
-        smol::spawn(async move {
+        executor::spawn(async move {
             serve(session_endpoint_clone, Arc::new(response_stream)).await;
         })
         .detach();
@@ -63,7 +76,7 @@ async fn serve(mut session_endpoint: SessionEndpoint, mut stream: Arc<Async<TcpS
         {
             if let Some(line) = lines.next().await {
                 let line = line.unwrap();
-                if line.starts_with("POST /new_rtc_session") {
+                if line.starts_with(RTC_URL_PATH.get().unwrap()) {
                     while let Some(line) = lines.next().await {
                         let line = line.unwrap();
                         if line.len() == 0 {

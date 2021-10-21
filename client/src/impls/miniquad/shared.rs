@@ -4,7 +4,7 @@ pub static mut MESSAGE_QUEUE: Option<VecDeque<Box<[u8]>>> = None;
 pub static mut ERROR_QUEUE: Option<VecDeque<String>> = None;
 
 extern "C" {
-    pub fn naia_connect(server_socket_address: JsObject);
+    pub fn naia_connect(server_socket_address: JsObject, rtc_path: JsObject);
     pub fn naia_send(message: JsObject);
     pub fn naia_resend_dropped_messages();
     pub fn naia_free_object(js_object: JsObjectWeak);
@@ -49,10 +49,6 @@ impl JsObject {
         }
         unsafe { buf.as_mut_vec().set_len(len as usize) };
         unsafe { naia_unwrap_to_str(self.weak(), buf.as_mut_vec().as_mut_ptr(), len as u32) };
-    }
-
-    pub fn u8_array(string: &[u8]) -> JsObject {
-        unsafe { naia_create_u8_array(string.as_ptr() as _, string.len() as _) }
     }
 
     pub fn to_u8_array(&self, buf: &mut Vec<u8>) {

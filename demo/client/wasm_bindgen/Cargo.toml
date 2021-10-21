@@ -1,5 +1,5 @@
 [package]
-name = "naia-client-socket-bindgen-example"
+name = "naia-socket-client-demo-wb"
 authors = ["connorcarpenter <connorcarpenter@gmail.com>"]
 version = "0.0.0"
 workspace = "../../../"
@@ -15,11 +15,10 @@ name = "index" # This is because cargo-web also picks up the static assets folde
 path = "src/main.rs"
 
 [features]
-multithread = [ "naia-client-socket/multithread" ]
-wbindgen = [ "naia-client-socket/wbindgen" ]
+multithread = [ "naia-socket-client-demo-app/multithread" ]
 
 [dependencies]
-naia-client-socket = { path = "../../../client" }
+naia-socket-client-demo-app = { path = "../app", features = [ "wbindgen" ] }
 log = "0.4.6"
 cfg-if = "0.1.10"
 
