@@ -25,7 +25,7 @@ impl PacketReceiver {
 }
 
 /// Used to receive packets from the Server Socket
-pub trait PacketReceiverTrait: PacketReceiverClone + Debug {
+pub trait PacketReceiverTrait: PacketReceiverClone + Send + Sync + Debug {
     /// Receives a packet from the Server Socket
     fn receive(&mut self) -> Result<Option<Packet>, NaiaServerSocketError>;
 }
