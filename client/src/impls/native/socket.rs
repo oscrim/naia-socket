@@ -1,8 +1,11 @@
 extern crate log;
 
-use std::net::{SocketAddr, UdpSocket};
+use std::{
+    net::{SocketAddr, UdpSocket},
+    sync::{Arc, Mutex},
+};
 
-use naia_socket_shared::{find_my_ip_address, Ref, SocketConfig};
+use naia_socket_shared::{find_my_ip_address, SocketConfig};
 
 use crate::packet_receiver::{ConditionedPacketReceiver, PacketReceiver, PacketReceiverTrait};
 
@@ -10,14 +13,12 @@ use super::{packet_receiver::PacketReceiverImpl, packet_sender::PacketSender};
 
 /// A client-side socket which communicates with an underlying unordered &
 /// unreliable protocol
-#[derive(Debug)]
 pub struct Socket {
     config: SocketConfig,
     io: Option<Io>,
 }
 
 /// Contains internal socket packet sender/receiver
-#[derive(Debug)]
 struct Io {
     /// Used to send packets through the socket
     pub packet_sender: PacketSender,
@@ -39,9 +40,11 @@ impl Socket {
 
         let client_ip_address = find_my_ip_address().expect("cannot find current ip address");
 
-        let socket = Ref::new(UdpSocket::bind((client_ip_address, 0)).unwrap());
+        let socket = Arc::new(Mutex::new(UdpSocket::bind((client_ip_address, 0)).unwrap()));
         socket
-            .borrow()
+            .as_ref()
+            .lock()
+            .unwrap()
             .set_nonblocking(true)
             .expect("can't set socket to non-blocking!");
 

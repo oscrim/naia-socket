@@ -1,6 +1,6 @@
 extern crate log;
 
-use std::{collections::VecDeque, net::SocketAddr};
+use std::{cell::RefCell, collections::VecDeque, net::SocketAddr, rc::Rc};
 
 use log::info;
 
@@ -11,11 +11,9 @@ use web_sys::{
     RtcSessionDescriptionInit, XmlHttpRequest,
 };
 
-use naia_socket_shared::Ref;
-
 use crate::Packet;
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct SessionAnswer {
     pub sdp: String,
 
@@ -23,7 +21,7 @@ pub struct SessionAnswer {
     pub _type: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize)]
 pub struct SessionCandidate {
     pub candidate: String,
     #[serde(rename = "sdpMLineIndex")]
@@ -32,7 +30,7 @@ pub struct SessionCandidate {
     pub sdp_mid: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize)]
 pub struct JsSessionResponse {
     pub answer: SessionAnswer,
     pub candidate: SessionCandidate,
@@ -47,7 +45,7 @@ pub struct IceServerConfig {
 pub fn webrtc_initialize(
     socket_address: SocketAddr,
     rtc_endpoint_path: String,
-    msg_queue: Ref<VecDeque<Packet>>,
+    msg_queue: Rc<RefCell<VecDeque<Packet>>>,
 ) -> RtcDataChannel {
     let server_url_str = format!("http://{}/{}", socket_address, rtc_endpoint_path);
 
@@ -91,7 +89,7 @@ pub fn webrtc_initialize(
     onerror_callback.forget();
 
     let peer_clone = peer.clone();
-    let server_url_msg = Ref::new(server_url_str);
+    let server_url_msg = Rc::new(RefCell::new(server_url_str));
     let peer_offer_func: Box<dyn FnMut(JsValue)> = Box::new(move |e: JsValue| {
         let session_description = e.into();
         let peer_clone_2 = peer_clone.clone();

@@ -2,7 +2,7 @@ use super::shared::{naia_create_u8_array, naia_send};
 use crate::Packet;
 
 /// Handles sending messages to the Server for a given Client Socket
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct PacketSender {}
 
 impl PacketSender {

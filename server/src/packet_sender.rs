@@ -3,7 +3,7 @@ use crossbeam::channel::Sender;
 use super::packet::Packet;
 
 /// Used to send packets to the Server Socket
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct PacketSender {
     channel_sender: Sender<Packet>,
 }

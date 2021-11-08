@@ -2,8 +2,6 @@
 //! Common data types shared between Naia Server Socket & Naia Client Socket
 
 #![deny(
-    missing_docs,
-    missing_debug_implementations,
     trivial_casts,
     trivial_numeric_casts,
     unstable_features,
@@ -22,7 +20,6 @@ mod find_my_ip_address;
 mod impls;
 mod link_conditioner_config;
 mod packet_reader;
-mod reference;
 mod shared_config;
 mod time_queue;
 
@@ -30,7 +27,6 @@ pub use find_my_ip_address::find_my_ip_address;
 pub use impls::{Instant, Random, Timer, Timestamp};
 pub use link_conditioner_config::LinkConditionerConfig;
 pub use packet_reader::PacketReader;
-pub use reference::Ref;
 pub use shared_config::SocketConfig;
 pub use time_queue::TimeQueue;
 

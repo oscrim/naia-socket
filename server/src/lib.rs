@@ -4,8 +4,6 @@
 //! communicate via unreliable WebRTC datachannels
 
 #![deny(
-    missing_docs,
-    missing_debug_implementations,
     trivial_casts,
     trivial_numeric_casts,
     unstable_features,

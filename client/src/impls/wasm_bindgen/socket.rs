@@ -1,8 +1,8 @@
 extern crate log;
 
-use std::{collections::VecDeque, net::SocketAddr};
+use std::{cell::RefCell, collections::VecDeque, net::SocketAddr, rc::Rc};
 
-use naia_socket_shared::{Ref, SocketConfig};
+use naia_socket_shared::SocketConfig;
 
 use crate::packet_receiver::{ConditionedPacketReceiver, PacketReceiver, PacketReceiverTrait};
 
@@ -13,14 +13,14 @@ use super::{
 
 /// A client-side socket which communicates with an underlying unordered &
 /// unreliable protocol
-#[derive(Debug)]
+
 pub struct Socket {
     config: SocketConfig,
     io: Option<Io>,
 }
 
 /// Contains internal socket packet sender/receiver
-#[derive(Debug)]
+
 struct Io {
     /// Used to send packets through the socket
     pub packet_sender: PacketSender,
@@ -40,14 +40,14 @@ impl Socket {
             panic!("Socket already listening!");
         }
 
-        let message_queue = Ref::new(VecDeque::new());
+        let message_queue = Rc::new(RefCell::new(VecDeque::new()));
         let data_channel = webrtc_initialize(
             server_address,
             self.config.rtc_endpoint_path.clone(),
             message_queue.clone(),
         );
 
-        let dropped_outgoing_messages = Ref::new(VecDeque::new());
+        let dropped_outgoing_messages = Rc::new(RefCell::new(VecDeque::new()));
 
         let packet_sender =
             PacketSender::new(data_channel.clone(), dropped_outgoing_messages.clone());
@@ -95,9 +95,5 @@ impl Socket {
     }
 }
 
-#[allow(unsafe_code)]
-#[cfg(feature = "multithread")]
 unsafe impl Send for Socket {}
-#[allow(unsafe_code)]
-#[cfg(feature = "multithread")]
 unsafe impl Sync for Socket {}

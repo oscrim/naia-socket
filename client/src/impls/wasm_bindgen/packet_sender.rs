@@ -1,16 +1,14 @@
-use std::collections::VecDeque;
+use std::{cell::RefCell, collections::VecDeque, rc::Rc};
 
 use web_sys::RtcDataChannel;
-
-use naia_socket_shared::Ref;
 
 use crate::Packet;
 
 /// Handles sending messages to the Server for a given Client Socket
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct PacketSender {
     data_channel: RtcDataChannel,
-    dropped_outgoing_messages: Ref<VecDeque<Packet>>,
+    dropped_outgoing_messages: Rc<RefCell<VecDeque<Packet>>>,
 }
 
 impl PacketSender {
@@ -18,7 +16,7 @@ impl PacketSender {
     /// reference to a list of dropped messages
     pub fn new(
         data_channel: RtcDataChannel,
-        dropped_outgoing_messages: Ref<VecDeque<Packet>>,
+        dropped_outgoing_messages: Rc<RefCell<VecDeque<Packet>>>,
     ) -> Self {
         PacketSender {
             data_channel,

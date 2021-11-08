@@ -1,5 +1,3 @@
-use std::fmt::Debug;
-
 use crossbeam::channel::Receiver;
 
 use naia_socket_shared::{link_condition_logic, LinkConditionerConfig, TimeQueue};
@@ -7,7 +5,7 @@ use naia_socket_shared::{link_condition_logic, LinkConditionerConfig, TimeQueue}
 use super::{error::NaiaServerSocketError, packet::Packet};
 
 /// Used to receive packets from the Server Socket
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct PacketReceiver {
     inner: Box<dyn PacketReceiverTrait>,
 }
@@ -25,13 +23,13 @@ impl PacketReceiver {
 }
 
 /// Used to receive packets from the Server Socket
-pub trait PacketReceiverTrait: PacketReceiverClone + Send + Sync + Debug {
+pub trait PacketReceiverTrait: PacketReceiverClone + Send + Sync {
     /// Receives a packet from the Server Socket
     fn receive(&mut self) -> Result<Option<Packet>, NaiaServerSocketError>;
 }
 
 /// Used to receive packets from the Server Socket
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct PacketReceiverImpl {
     channel_receiver: Receiver<Result<Packet, NaiaServerSocketError>>,
 }
@@ -58,7 +56,7 @@ impl PacketReceiverTrait for PacketReceiverImpl {
 }
 
 /// Used to receive packets from the Server Socket
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct ConditionedPacketReceiverImpl {
     channel_receiver: Receiver<Result<Packet, NaiaServerSocketError>>,
     link_conditioner_config: LinkConditionerConfig,

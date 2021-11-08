@@ -1,24 +1,23 @@
 use std::{
     io::ErrorKind,
     net::{SocketAddr, UdpSocket},
+    sync::{Arc, Mutex},
 };
-
-use naia_socket_shared::Ref;
 
 use crate::{error::NaiaClientSocketError, packet::Packet, packet_receiver::PacketReceiverTrait};
 
 /// Handles receiving messages from the Server through a given Client Socket
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct PacketReceiverImpl {
     address: SocketAddr,
-    socket: Ref<UdpSocket>,
+    socket: Arc<Mutex<UdpSocket>>,
     receive_buffer: Vec<u8>,
 }
 
 impl PacketReceiverImpl {
     /// Create a new PacketReceiver, if supplied with the Server's address & a
     /// reference back to the parent Socket
-    pub fn new(address: SocketAddr, socket: Ref<UdpSocket>) -> Self {
+    pub fn new(address: SocketAddr, socket: Arc<Mutex<UdpSocket>>) -> Self {
         PacketReceiverImpl {
             address,
             socket,
@@ -32,7 +31,9 @@ impl PacketReceiverTrait for PacketReceiverImpl {
         let buffer: &mut [u8] = self.receive_buffer.as_mut();
         match self
             .socket
-            .borrow()
+            .as_ref()
+            .lock()
+            .unwrap()
             .recv_from(buffer)
             .map(move |(recv_len, address)| (&buffer[..recv_len], address))
         {

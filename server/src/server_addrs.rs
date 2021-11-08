@@ -1,7 +1,7 @@
 use std::{default::Default, net::SocketAddr};
 
 /// List of addresses needed to start listening on a ServerSocket
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct ServerAddrs {
     /// IP Address to listen on for the signaling portion of WebRTC
     pub session_listen_addr: SocketAddr,

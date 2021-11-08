@@ -1,6 +1,6 @@
 [package]
 name = "naia-socket-shared"
-version = "0.7.0-alpha.1"
+version = "0.7.0"
 authors = ["connorcarpenter <connorcarpenter@gmail.com>"]
 description = "Common data types shared between naia-server-socket & naia-client-socket crates"
 documentation = "https://docs.rs/naia-socket-shared"
@@ -14,7 +14,6 @@ edition = "2018"
 maintenance = { status = "actively-developed" }
 
 [features]
-multithread = [ ]
 wbindgen = [ "wasm-bindgen", "js-sys" ]
 mquad = [ ]
 

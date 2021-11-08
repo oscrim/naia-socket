@@ -20,7 +20,7 @@ const CLIENT_CHANNEL_SIZE: usize = 8;
 
 /// A socket which communicates with clients using an underlying
 /// unordered & unreliable network protocol
-#[derive(Debug)]
+
 pub struct Socket {
     rtc_server: RtcServer,
     to_client_sender: mpsc::Sender<Packet>,
@@ -146,12 +146,5 @@ impl RtcServer {
         remote_addr: &SocketAddr,
     ) -> Result<(), SendError> {
         self.inner.send(message, message_type, remote_addr).await
-    }
-}
-
-use std::fmt;
-impl fmt::Debug for RtcServer {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "RtcServer")
     }
 }
