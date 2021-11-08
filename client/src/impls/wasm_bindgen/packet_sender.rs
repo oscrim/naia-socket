@@ -50,9 +50,5 @@ impl PacketSender {
     }
 }
 
-#[allow(unsafe_code)]
-#[cfg(feature = "multithread")]
 unsafe impl Send for PacketSender {}
-#[allow(unsafe_code)]
-#[cfg(feature = "multithread")]
 unsafe impl Sync for PacketSender {}
