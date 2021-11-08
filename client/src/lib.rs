@@ -32,3 +32,16 @@ pub use error::NaiaClientSocketError;
 pub use impls::{PacketSender, Socket};
 pub use packet::Packet;
 pub use packet_receiver::PacketReceiver;
+
+cfg_if! {
+    if #[cfg(all(target_arch = "wasm32", feature = "wbindgen", feature = "mquad"))]
+    {
+        // Use both protocols...
+        compile_error!("Naia Client Socket on Wasm requires either the 'wbindgen' OR 'mquad' feature to be enabled, you must pick one.");
+    }
+    else if #[cfg(all(target_arch = "wasm32", not(feature = "wbindgen"), not(feature = "mquad")))]
+    {
+        // Use no protocols...
+        compile_error!("Naia Client Socket on Wasm requires either the 'wbindgen' or 'mquad' feature to be enabled, you must pick one.");
+    }
+}

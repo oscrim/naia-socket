@@ -43,3 +43,10 @@ impl PacketReceiverTrait for PacketReceiverImpl {
         }
     }
 }
+
+#[allow(unsafe_code)]
+#[cfg(feature = "multithread")]
+unsafe impl Send for PacketReceiverImpl {}
+#[allow(unsafe_code)]
+#[cfg(feature = "multithread")]
+unsafe impl Sync for PacketReceiverImpl {}
