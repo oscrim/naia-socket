@@ -24,8 +24,8 @@ naia-socket-shared = { path = "../shared", version = "=0.7.0" }
 cfg-if = "0.1.10"
 log = { version = "0.4" }
 url = { version = "2.1.1", optional = true }
-wasm-bindgen = { version = "0.2.45", features = [ "serde-serialize" ], optional = true  }
-js-sys = { version = "0.3", optional = true  }
+wasm-bindgen = { version = "0.2.78", features = [ "serde-serialize" ], optional = true  }
+js-sys = { version = "0.3.55", optional = true  }
 web_sys = { version = "0.3.22", package = "web-sys", features = [
     "RtcDataChannel", "RtcDataChannelInit", "RtcDataChannelType",
     "RtcIceCandidate", "RtcIceCandidateInit",
